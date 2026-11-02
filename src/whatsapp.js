@@ -36,5 +36,5 @@ export async function sendReminder(text, params) {
       },
     });
   }
-  return post({ type: "text", text: { body: text, preview_url: false } });
+  return post({ type: "text", text: { body: text, preview_url: /https?:\/\//.test(text) } });
 }

@@ -8,7 +8,10 @@ import { mockInvoices, mockMultibanco } from "./src/mock.js";
 import { composeMessage, lateInterest } from "./src/reminders.js";
 
 const moloni = live.moloni ? await import("./src/moloni.js") : null;
-const easypay = live.easypay ? await import("./src/easypay.js") : null;
+// Payments: Stripe test mode if configured (no company needed), else easypay sandbox, else mock.
+const stripe = live.stripe ? await import("./src/stripe.js") : null;
+const easypay = !stripe && live.easypay ? await import("./src/easypay.js") : null;
+const payments = stripe || easypay;
 const whatsapp = live.wa ? await import("./src/whatsapp.js") : null;
 
 // In-memory state: invoices plus what we did with each one.
@@ -37,8 +40,13 @@ function lateInterestView(inv) {
 async function remind(inv, withInterest) {
   const s = st(inv.id);
   if (!s.mb) {
-    s.mb = easypay ? await easypay.createMultibanco(inv) : mockMultibanco();
-    log(inv.id, "payment", `Referência Multibanco criada: ${s.mb.entity} / ${s.mb.reference}${easypay ? " (easypay sandbox)" : " (mock)"}`);
+    if (stripe) {
+      s.mb = await stripe.createPaymentLink(inv);
+      log(inv.id, "payment", `Link de pagamento Stripe (teste) criado: ${s.mb.url}`);
+    } else {
+      s.mb = easypay ? await easypay.createMultibanco(inv) : mockMultibanco();
+      log(inv.id, "payment", `Referência Multibanco criada: ${s.mb.entity} / ${s.mb.reference}${easypay ? " (easypay sandbox)" : " (mock)"}`);
+    }
   }
   const msg = composeMessage(inv, s.mb, { withInterest });
   if (whatsapp) {
@@ -53,6 +61,10 @@ async function remind(inv, withInterest) {
 
 async function mbway(inv) {
   const s = st(inv.id);
+  if (stripe) {
+    log(inv.id, "payment", "Com Stripe o cliente escolhe MB WAY na página de pagamento (teste: qualquer número, ex. +351911111112).");
+    return;
+  }
   if (!easypay) {
     s.mbway = { paymentId: "mock-mbway" };
     log(inv.id, "payment", "Pedido MB WAY simulado");
@@ -64,13 +76,13 @@ async function mbway(inv) {
 
 async function check(inv) {
   const s = st(inv.id);
-  if (s.status === "paid" || !easypay) return s.status;
+  if (s.status === "paid" || !payments) return s.status;
   for (const p of [s.mbway, s.mb]) {
     if (!p?.paymentId) continue;
-    const status = await easypay.paymentStatus(p.paymentId);
+    const status = await payments.paymentStatus(p.paymentId);
     if (status === "paid") {
       s.status = "paid";
-      log(inv.id, "paid", `Pagamento confirmado pela easypay (${p === s.mbway ? "MB WAY" : "Multibanco"})`);
+      log(inv.id, "paid", stripe ? "Pagamento confirmado pela Stripe (teste)" : `Pagamento confirmado pela easypay (${p === s.mbway ? "MB WAY" : "Multibanco"})`);
       if (whatsapp) {
         try { await whatsapp.sendReminder(`Pagamento da fatura ${inv.number} recebido. Obrigado!\n${config.businessName}`, [inv.contact || inv.client, inv.number, "", "", "", ""]); } catch { /* thank-you is optional */ }
       }
@@ -95,7 +107,7 @@ const server = createServer(async (req, res) => {
       return res.end(await readFile(join(config.root, "public", "index.html")));
     }
     if (url.pathname === "/api/status") {
-      return json(res, 200, { live, business: config.businessName, rate: config.lateRate, recipient: live.wa ? `+${config.wa.recipient}` : null, mbwayPhone: config.easypay.mbwayPhone });
+      return json(res, 200, { live, payments: stripe ? "stripe" : easypay ? "easypay" : "mock", business: config.businessName, rate: config.lateRate, recipient: live.wa ? `+${config.wa.recipient}` : null, mbwayPhone: config.easypay.mbwayPhone });
     }
     if (url.pathname === "/api/invoices" && req.method === "GET") {
       if (url.searchParams.get("refresh") === "1" || !invoices.length) await loadInvoices();
@@ -111,7 +123,7 @@ const server = createServer(async (req, res) => {
       if (action === "mbway") { await mbway(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "check") { await check(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "mock-pay") {
-        if (easypay) return json(res, 400, { error: "easypay is live: pay in the easypay sandbox backoffice instead." });
+        if (payments) return json(res, 400, { error: "Payments are live in test mode: pay through the payment link or the sandbox instead." });
         st(inv.id).status = "paid"; log(inv.id, "paid", "Pagamento simulado (mock)");
         return json(res, 200, { ok: true, invoice: view(inv) });
       }
@@ -125,5 +137,5 @@ const server = createServer(async (req, res) => {
 
 server.listen(config.port, () => {
   console.log(`Pago a Tempo prototype on http://localhost:${config.port}`);
-  console.log(`Live services: Moloni=${live.moloni} WhatsApp=${live.wa} easypay=${live.easypay} (others use mock data)`);
+  console.log(`Live services: Moloni=${live.moloni} WhatsApp=${live.wa} payments=${stripe ? "stripe" : easypay ? "easypay" : "mock"} (others use mock data)`);
 });

@@ -63,6 +63,7 @@ label{font-size:14px;display:flex;gap:6px;align-items:center}
         <button class="primary" id="b-remind" disabled>Enviar lembrete WhatsApp</button>
         <button id="b-mbway" disabled>Pedir MB WAY</button>
         <button id="b-check" disabled>Verificar pagamento</button>
+        <a id="paylink" target="_blank" rel="noopener" hidden style="align-self:center">Abrir página de pagamento ↗</a>
       </div>
       <div class="wa"><div class="bubble" id="preview">…</div></div>
       <ul class="log" id="log"></ul>
@@ -85,15 +86,17 @@ function pill(i) {
 }
 function render() {
   const live = S.status.live;
-  $("svc").innerHTML = [["Moloni", live.moloni], ["WhatsApp", live.wa], ["easypay", live.easypay]].map(([n, l]) => '<span class="chip ' + (l ? "live" : "") + '">' + n + ": " + (l ? "ligado (teste)" : "simulado") + "</span>").join("");
+  $("svc").innerHTML = [["Moloni", live.moloni ? "ligado (teste)" : ""], ["WhatsApp", live.wa ? "ligado (teste)" : ""], ["Pagamentos", { stripe: "Stripe (teste)", easypay: "easypay (teste)" }[S.status.payments] || ""]].map(([n, l]) => '<span class="chip ' + (l ? "live" : "") + '">' + n + ": " + (l || "simulado") + "</span>").join("");
   $("src").textContent = (live.moloni ? "Faturas reais da empresa de demonstração Moloni." : "Faturas fictícias (Moloni não configurado).") + (S.status.recipient ? " WhatsApp vai para " + S.status.recipient + "." : "");
   $("rows").innerHTML = S.inv.map((i) => '<tr data-id="' + i.id + '" class="' + (i.id === S.sel ? "sel" : "") + '"><td><b>' + i.client + "</b></td><td>" + i.number + '</td><td class="num">' + eur(i.amount) + '</td><td class="num">' + (i.daysLate > 0 ? i.daysLate + " d" : "—") + '</td><td class="num">' + (i.daysLate > 0 ? eur(i.interest + i.compensation) : "—") + "</td><td>" + pill(i) + "</td></tr>").join("") || '<tr><td colspan="6">Sem faturas em aberto.</td></tr>';
   const i = S.inv.find((x) => x.id === S.sel);
   ["b-remind", "b-mbway", "b-check"].forEach((b) => ($(b).disabled = !i || i.status === "paid"));
   if (!i) return;
   $("d-title").textContent = i.client + " · " + i.number;
-  $("d-sub").textContent = eur(i.amount) + " · vencimento " + new Date(i.dueDate).toLocaleDateString("pt-PT") + (i.mb ? " · Multibanco " + i.mb.entity + " / " + i.mb.reference : "");
-  $("b-check").textContent = S.status.live.easypay ? "Verificar pagamento" : "Simular pagamento";
+  $("d-sub").textContent = eur(i.amount) + " · vencimento " + new Date(i.dueDate).toLocaleDateString("pt-PT") + (i.mb ? (i.mb.url ? " · link de pagamento criado" : " · Multibanco " + i.mb.entity + " / " + i.mb.reference) : "");
+  $("b-check").textContent = S.status.payments !== "mock" ? "Verificar pagamento" : "Simular pagamento";
+  $("b-mbway").hidden = S.status.payments === "stripe";
+  $("paylink").hidden = !(i.mb && i.mb.url); if (i.mb && i.mb.url) $("paylink").href = i.mb.url;
   $("log").innerHTML = i.log.map((l) => "<li><time>" + new Date(l.at).toLocaleTimeString("pt-PT") + "</time>" + l.text + "</li>").join("");
 }
 async function preview() {
@@ -106,7 +109,7 @@ async function act(kind) {
   const btn = { remind: "b-remind", mbway: "b-mbway", check: "b-check" }[kind]; $(btn).disabled = true;
   try {
     let path = kind;
-    if (kind === "check" && !S.status.live.easypay) path = "mock-pay";
+    if (kind === "check" && S.status.payments === "mock") path = "mock-pay";
     const d = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ withInterest: $("interest").checked }) });
     upd(d.invoice);
   } catch (e) { showErr(e); render(); }
@@ -128,7 +131,7 @@ $("b-mbway").onclick = () => act("mbway");
 $("b-check").onclick = () => act("check");
 // With easypay live, poll unpaid invoices that have a payment request every 5 s.
 setInterval(async () => {
-  if (!S.status?.live.easypay) return;
+  if (!S.status || S.status.payments === "mock") return;
   for (const i of S.inv.filter((x) => x.status !== "paid" && (x.mb || x.mbway))) {
     try { const d = await api("/api/invoices/" + encodeURIComponent(i.id) + "/check", { method: "POST" }); if (d.invoice.status !== i.status) upd(d.invoice); } catch {}
   }

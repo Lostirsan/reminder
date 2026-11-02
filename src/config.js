@@ -35,6 +35,9 @@ export const config = {
     template: e("WA_TEMPLATE_NAME"),
     templateLang: e("WA_TEMPLATE_LANG", "pt_PT"),
   },
+  stripe: {
+    secretKey: e("STRIPE_SECRET_KEY"),
+  },
   easypay: {
     accountId: e("EASYPAY_ACCOUNT_ID"),
     apiKey: e("EASYPAY_API_KEY"),
@@ -45,5 +48,6 @@ export const config = {
 export const live = {
   moloni: Boolean(config.moloni.developerId && config.moloni.clientSecret && config.moloni.username && config.moloni.password),
   wa: Boolean(config.wa.phoneNumberId && config.wa.token && config.wa.recipient),
+  stripe: Boolean(config.stripe.secretKey),
   easypay: Boolean(config.easypay.accountId && config.easypay.apiKey),
 };

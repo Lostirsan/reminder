@@ -21,7 +21,7 @@ export function step(daysLate) {
 export function composeMessage(inv, pay, { withInterest = true } = {}) {
   const name = inv.contact || inv.client;
   const s = step(inv.daysLate);
-  const payLines = [
+  const payLines = pay?.url ? `Pagar online (MB WAY ou Multibanco): ${pay.url}` : [
     pay?.entity && pay?.reference ? `Multibanco: Entidade ${pay.entity} · Referência ${String(pay.reference).replace(/(\d{3})(?=\d)/g, "$1 ")} · ${eur(inv.amount)}` : null,
     "MB WAY: enviamos o pedido para o seu telemóvel, basta aceitar na app.",
   ].filter(Boolean).join("\n");
@@ -39,6 +39,6 @@ export function composeMessage(inv, pay, { withInterest = true } = {}) {
     else body += " Agradecemos a regularização. Pode pagar aqui:";
   }
   const text = `${body}\n\n${payLines}\n\nObrigado!\n${config.businessName}\n\n[PROTÓTIPO · dados de teste]`;
-  const params = [name, inv.number, eur(inv.amount), ptDate(inv.dueDate), pay?.entity || "-", pay?.reference || "-"];
+  const params = [name, inv.number, eur(inv.amount), ptDate(inv.dueDate), pay?.url || pay?.entity || "-", pay?.reference || "-"];
   return { step: s, text, params };
 }
