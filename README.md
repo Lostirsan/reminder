@@ -14,7 +14,7 @@ Each service runs live when its credentials are in `.env`; otherwise it uses moc
 Requires Node.js 18+ and no npm packages.
 
 ```bash
-cp .env.example .env   # fill in what you have; empty blocks use mock data
+cp .env.example .env   # fill in what you have; empty blocks use mock data (on Windows the file may be called env.txt)
 node scripts/check.js  # tests each configured service
 node server.js         # open http://localhost:3000
 ```

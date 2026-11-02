@@ -5,8 +5,9 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Minimal .env loader (no dependencies).
-const envPath = join(root, ".env");
-if (existsSync(envPath)) {
+// Reads .env, or env.txt (easier to create on Windows).
+const envPath = [join(root, ".env"), join(root, "env.txt")].find((p) => existsSync(p));
+if (envPath) {
   for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
     if (!m || process.env[m[1]] !== undefined) continue;
