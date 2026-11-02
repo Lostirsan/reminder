@@ -30,14 +30,14 @@ async function loadInvoices() {
 
 function view(inv) {
   const s = st(inv.id);
-  return { ...inv, ...lateInterestView(inv), status: s.status, mb: s.mb, mbway: s.mbway, log: s.log };
+  return { ...inv, ...lateInterestView(inv), status: s.status, mb: s.mb, mbway: s.mbway, log: s.log, lastMessage: s.lastMessage || null };
 }
 function lateInterestView(inv) {
   const li = lateInterest(inv.amount, inv.daysLate);
   return { interest: li.interest, compensation: li.compensation };
 }
 
-async function remind(inv, withInterest) {
+async function remind(inv, withInterest, realWhatsApp = true) {
   const s = st(inv.id);
   if (!s.mb) {
     if (stripe) {
@@ -49,12 +49,20 @@ async function remind(inv, withInterest) {
     }
   }
   const msg = composeMessage(inv, s.mb, { withInterest });
-  if (whatsapp) {
-    const id = await whatsapp.sendReminder(msg.text, msg.params);
-    log(inv.id, "whatsapp", `WhatsApp enviado (${msg.step.label}) para +${config.wa.recipient}, id ${id}`);
-  } else {
-    log(inv.id, "whatsapp", `WhatsApp simulado (${msg.step.label})`);
+  // Real WhatsApp when configured and not switched off; on any error the demo falls back
+  // to a simulated message so it keeps working (e.g. a new Meta account that is locked).
+  let sent = false;
+  if (whatsapp && realWhatsApp) {
+    try {
+      const id = await whatsapp.sendReminder(msg.text, msg.params);
+      log(inv.id, "whatsapp", `WhatsApp enviado à Meta (${msg.step.label}) para +${config.wa.recipient}, id ${id}`);
+      sent = true;
+    } catch (e) {
+      log(inv.id, "error", `WhatsApp real falhou: ${e.message}. Mensagem simulada no ecrã.`);
+    }
   }
+  if (!sent) log(inv.id, "whatsapp", `WhatsApp simulado (${msg.step.label})`);
+  s.lastMessage = { text: msg.text, at: new Date().toISOString(), real: sent };
   if (s.status === "open") s.status = "reminded";
   return msg;
 }
@@ -119,7 +127,7 @@ const server = createServer(async (req, res) => {
       if (!inv) return json(res, 404, { error: "Invoice not found. Refresh the list." });
       const action = m[2];
       if (action === "preview") return json(res, 200, composeMessage(inv, st(inv.id).mb || { entity: "·····", reference: "·········" }, { withInterest: url.searchParams.get("interest") !== "0" }));
-      if (action === "remind") { const b = await body(req); const msg = await remind(inv, b.withInterest !== false); return json(res, 200, { ok: true, message: msg.text, invoice: view(inv) }); }
+      if (action === "remind") { const b = await body(req); const msg = await remind(inv, b.withInterest !== false, b.realWhatsApp !== false); return json(res, 200, { ok: true, message: msg.text, invoice: view(inv) }); }
       if (action === "mbway") { await mbway(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "check") { await check(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "mock-pay") {

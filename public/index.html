@@ -59,13 +59,14 @@ label{font-size:14px;display:flex;gap:6px;align-items:center}
       <h2 id="d-title">Escolha uma fatura</h2>
       <p class="sub" id="d-sub"></p>
       <label><input type="checkbox" id="interest" checked> Mencionar juros de mora no aviso firme</label>
+      <label id="real-wa-l" hidden><input type="checkbox" id="real-wa" checked> Enviar pelo WhatsApp real (desligado = simular no ecrã)</label>
       <div class="actions">
         <button class="primary" id="b-remind" disabled>Enviar lembrete WhatsApp</button>
         <button id="b-mbway" disabled>Pedir MB WAY</button>
         <button id="b-check" disabled>Verificar pagamento</button>
         <a id="paylink" target="_blank" rel="noopener" hidden style="align-self:center">Abrir página de pagamento ↗</a>
       </div>
-      <div class="wa"><div class="bubble" id="preview">…</div></div>
+      <div class="wa"><div class="sub" id="wa-state" style="margin:0 0 6px">Pré-visualização</div><div class="bubble" id="preview">…</div></div>
       <ul class="log" id="log"></ul>
     </div>
   </div>
@@ -97,10 +98,14 @@ function render() {
   $("b-check").textContent = S.status.payments !== "mock" ? "Verificar pagamento" : "Simular pagamento";
   $("b-mbway").hidden = S.status.payments === "stripe";
   $("paylink").hidden = !(i.mb && i.mb.url); if (i.mb && i.mb.url) $("paylink").href = i.mb.url;
+  $("real-wa-l").hidden = !S.status.live.wa;
+  $("wa-state").textContent = i.lastMessage ? (i.lastMessage.real ? "Enviado pelo WhatsApp ✓✓ " : "Enviado (simulação) ✓✓ ") + new Date(i.lastMessage.at).toLocaleTimeString("pt-PT") : "Pré-visualização";
   $("log").innerHTML = i.log.map((l) => "<li><time>" + new Date(l.at).toLocaleTimeString("pt-PT") + "</time>" + l.text + "</li>").join("");
 }
 async function preview() {
   if (!S.sel) return;
+  const cur = S.inv.find((x) => x.id === S.sel);
+  if (cur && cur.lastMessage) { $("preview").textContent = cur.lastMessage.text; return; }
   try { const m = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/preview?interest=" + ($("interest").checked ? 1 : 0)); $("preview").textContent = m.text; } catch (e) { showErr(e); }
 }
 function upd(inv) { S.inv = S.inv.map((x) => (x.id === inv.id ? inv : x)); render(); preview(); }
@@ -110,7 +115,7 @@ async function act(kind) {
   try {
     let path = kind;
     if (kind === "check" && S.status.payments === "mock") path = "mock-pay";
-    const d = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ withInterest: $("interest").checked }) });
+    const d = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ withInterest: $("interest").checked, realWhatsApp: $("real-wa").checked }) });
     upd(d.invoice);
   } catch (e) { showErr(e); render(); }
 }
@@ -126,6 +131,8 @@ async function load(refresh) {
 $("rows").onclick = (e) => { const tr = e.target.closest("tr[data-id]"); if (tr) { S.sel = tr.dataset.id; render(); preview(); } };
 $("refresh").onclick = () => load(true);
 $("interest").onchange = preview;
+try { if (localStorage.getItem("realWa") === "0") $("real-wa").checked = false; } catch {}
+$("real-wa").onchange = () => { try { localStorage.setItem("realWa", $("real-wa").checked ? "1" : "0"); } catch {} };
 $("b-remind").onclick = () => act("remind");
 $("b-mbway").onclick = () => act("mbway");
 $("b-check").onclick = () => act("check");
