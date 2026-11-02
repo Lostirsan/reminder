@@ -15,7 +15,7 @@ const payments = stripe || easypay;
 // WhatsApp: Twilio sandbox if configured (no business needed), else Meta Cloud API.
 const twilio = live.twilio ? await import("./src/twilio.js") : null;
 const meta = !twilio && live.wa ? await import("./src/whatsapp.js") : null;
-const whatsapp = twilio ? { sendReminder: (text) => twilio.sendText(text) } : meta;
+const whatsapp = twilio ? { sendReminder: (text, params) => twilio.sendText(text, params) } : meta;
 const waProvider = twilio ? "Twilio sandbox" : meta ? "Meta" : null;
 const email = live.email ? await import("./src/email.js") : null;
 

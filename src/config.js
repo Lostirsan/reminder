@@ -40,6 +40,9 @@ export const config = {
     accountSid: e("TWILIO_ACCOUNT_SID"),
     authToken: e("TWILIO_AUTH_TOKEN"),
     from: e("TWILIO_WHATSAPP_FROM", "+14155238886"),
+    // New "Try out WhatsApp" trials accept only Twilio templates: ContentSid HX...
+    contentSid: e("TWILIO_CONTENT_SID"),
+    contentVariables: e("TWILIO_CONTENT_VARIABLES"),
   },
   email: {
     resendKey: e("RESEND_API_KEY"),
