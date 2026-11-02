@@ -12,7 +12,12 @@ const moloni = live.moloni ? await import("./src/moloni.js") : null;
 const stripe = live.stripe ? await import("./src/stripe.js") : null;
 const easypay = !stripe && live.easypay ? await import("./src/easypay.js") : null;
 const payments = stripe || easypay;
-const whatsapp = live.wa ? await import("./src/whatsapp.js") : null;
+// WhatsApp: Twilio sandbox if configured (no business needed), else Meta Cloud API.
+const twilio = live.twilio ? await import("./src/twilio.js") : null;
+const meta = !twilio && live.wa ? await import("./src/whatsapp.js") : null;
+const whatsapp = twilio ? { sendReminder: (text) => twilio.sendText(text) } : meta;
+const waProvider = twilio ? "Twilio sandbox" : meta ? "Meta" : null;
+const email = live.email ? await import("./src/email.js") : null;
 
 // In-memory state: invoices plus what we did with each one.
 let invoices = [];
@@ -37,17 +42,21 @@ function lateInterestView(inv) {
   return { interest: li.interest, compensation: li.compensation };
 }
 
-async function remind(inv, withInterest, realWhatsApp = true) {
+async function ensurePayment(inv) {
   const s = st(inv.id);
-  if (!s.mb) {
-    if (stripe) {
-      s.mb = await stripe.createPaymentLink(inv);
-      log(inv.id, "payment", `Link de pagamento Stripe (teste) criado: ${s.mb.url}`);
-    } else {
-      s.mb = easypay ? await easypay.createMultibanco(inv) : mockMultibanco();
-      log(inv.id, "payment", `Referência Multibanco criada: ${s.mb.entity} / ${s.mb.reference}${easypay ? " (easypay sandbox)" : " (mock)"}`);
-    }
+  if (s.mb) return;
+  if (stripe) {
+    s.mb = await stripe.createPaymentLink(inv);
+    log(inv.id, "payment", `Link de pagamento Stripe (teste) criado: ${s.mb.url}`);
+  } else {
+    s.mb = easypay ? await easypay.createMultibanco(inv) : mockMultibanco();
+    log(inv.id, "payment", `Referência Multibanco criada: ${s.mb.entity} / ${s.mb.reference}${easypay ? " (easypay sandbox)" : " (mock)"}`);
   }
+}
+
+async function remind(inv, withInterest, realWhatsApp = true) {
+  await ensurePayment(inv);
+  const s = st(inv.id);
   const msg = composeMessage(inv, s.mb, { withInterest });
   // Real WhatsApp when configured and not switched off; on any error the demo falls back
   // to a simulated message so it keeps working (e.g. a new Meta account that is locked).
@@ -55,7 +64,7 @@ async function remind(inv, withInterest, realWhatsApp = true) {
   if (whatsapp && realWhatsApp) {
     try {
       const id = await whatsapp.sendReminder(msg.text, msg.params);
-      log(inv.id, "whatsapp", `WhatsApp enviado à Meta (${msg.step.label}) para +${config.wa.recipient}, id ${id}`);
+      log(inv.id, "whatsapp", `WhatsApp enviado via ${waProvider} (${msg.step.label}) para +${config.wa.recipient}, id ${id}`);
       sent = true;
     } catch (e) {
       log(inv.id, "error", `WhatsApp real falhou: ${e.message}. Mensagem simulada no ecrã.`);
@@ -115,19 +124,40 @@ const server = createServer(async (req, res) => {
       return res.end(await readFile(join(config.root, "public", "index.html")));
     }
     if (url.pathname === "/api/status") {
-      return json(res, 200, { live, payments: stripe ? "stripe" : easypay ? "easypay" : "mock", business: config.businessName, rate: config.lateRate, recipient: live.wa ? `+${config.wa.recipient}` : null, mbwayPhone: config.easypay.mbwayPhone });
+      return json(res, 200, { live, payments: stripe ? "stripe" : easypay ? "easypay" : "mock", waProvider, email: live.email ? config.email.to : null, business: config.businessName, rate: config.lateRate, recipient: live.wa ? `+${config.wa.recipient}` : null, mbwayPhone: config.easypay.mbwayPhone });
     }
     if (url.pathname === "/api/invoices" && req.method === "GET") {
       if (url.searchParams.get("refresh") === "1" || !invoices.length) await loadInvoices();
       return json(res, 200, invoices.map(view));
     }
-    const m = url.pathname.match(/^\/api\/invoices\/([^/]+)\/(remind|mbway|check|mock-pay|preview)$/);
+    const m = url.pathname.match(/^\/api\/invoices\/([^/]+)\/(remind|email|walink|mbway|check|mock-pay|preview)$/);
     if (m) {
       const inv = invoices.find((i) => i.id === decodeURIComponent(m[1]));
       if (!inv) return json(res, 404, { error: "Invoice not found. Refresh the list." });
       const action = m[2];
       if (action === "preview") return json(res, 200, composeMessage(inv, st(inv.id).mb || { entity: "·····", reference: "·········" }, { withInterest: url.searchParams.get("interest") !== "0" }));
       if (action === "remind") { const b = await body(req); const msg = await remind(inv, b.withInterest !== false, b.realWhatsApp !== false); return json(res, 200, { ok: true, message: msg.text, invoice: view(inv) }); }
+      if (action === "email") {
+        const b = await body(req);
+        const s = st(inv.id);
+        if (!s.mb) await ensurePayment(inv);
+        const msg = composeMessage(inv, s.mb, { withInterest: b.withInterest !== false });
+        if (email) {
+          await email.sendEmail(`Fatura ${inv.number} · ${config.businessName}`, msg.text);
+          log(inv.id, "email", `Email enviado para ${config.email.to} (Resend)`);
+        } else log(inv.id, "email", "Email simulado (Resend não configurado)");
+        if (s.status === "open") s.status = "reminded";
+        return json(res, 200, { ok: true, invoice: view(inv) });
+      }
+      if (action === "walink") {
+        // Click-to-chat: opens the business owner's own WhatsApp with the reminder prefilled. No API, no business account.
+        const b = await body(req);
+        if (!st(inv.id).mb) await ensurePayment(inv);
+        const msg = composeMessage(inv, st(inv.id).mb, { withInterest: b.withInterest !== false });
+        const phone = (inv.phone || config.wa.recipient || "").replace(/\D/g, "");
+        log(inv.id, "whatsapp", "Link wa.me criado (envio pelo WhatsApp do próprio negócio)");
+        return json(res, 200, { ok: true, url: `https://wa.me/${phone}?text=${encodeURIComponent(msg.text)}`, invoice: view(inv) });
+      }
       if (action === "mbway") { await mbway(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "check") { await check(inv); return json(res, 200, { ok: true, invoice: view(inv) }); }
       if (action === "mock-pay") {

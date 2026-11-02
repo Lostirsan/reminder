@@ -31,6 +31,14 @@ No company or NIF is needed for any of these test environments.
 
 Docs: https://moloni.pt/dev/criar-uma-conta · sandbox: https://moloni.pt/dev/sandbox
 
+### WhatsApp without a business: three options
+- **Click-to-chat (no signup at all):** the "Abrir no meu WhatsApp" button opens WhatsApp with the reminder prefilled (wa.me link), to be sent from the business owner's own phone.
+- **Twilio WhatsApp Sandbox (free trial, no business verification):** sign up at https://www.twilio.com/try-twilio (email + phone verification). Console → Messaging → Try it out → Send a WhatsApp message: note the sandbox number (+1 415 523 8886) and your join code, and send `join <code>` from your phone to that number. Copy the Account SID and Auth Token from the Console home page. `.env`: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `WA_TEST_RECIPIENT`. When set, Twilio is used instead of Meta. Docs: https://www.twilio.com/docs/whatsapp/sandbox
+- **Meta Cloud API** (below). New, unverified accounts can be locked (error 131031).
+
+### Email via Resend (free, no company)
+Sign up at https://resend.com, create an API key. Without a verified domain Resend delivers only to the email you signed up with, so set `EMAIL_TO` to that address. `.env`: `RESEND_API_KEY`, `EMAIL_TO`.
+
 ### WhatsApp Cloud API (Meta free test number)
 1. Create a Meta developer account at https://developers.facebook.com and a new app with the **WhatsApp** use case (create a business portfolio when asked; no verification needed for the test number).
 2. In WhatsApp → API Setup: note the **Phone number ID** of the test number, generate a temporary **access token**, and add your own mobile number to the recipient list (max 5 numbers; confirm with the code Meta sends).

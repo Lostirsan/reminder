@@ -36,6 +36,16 @@ export const config = {
     template: e("WA_TEMPLATE_NAME"),
     templateLang: e("WA_TEMPLATE_LANG", "pt_PT"),
   },
+  twilio: {
+    accountSid: e("TWILIO_ACCOUNT_SID"),
+    authToken: e("TWILIO_AUTH_TOKEN"),
+    from: e("TWILIO_WHATSAPP_FROM", "+14155238886"),
+  },
+  email: {
+    resendKey: e("RESEND_API_KEY"),
+    to: e("EMAIL_TO"),
+    from: e("EMAIL_FROM", "Pago a Tempo <onboarding@resend.dev>"),
+  },
   stripe: {
     secretKey: e("STRIPE_SECRET_KEY"),
   },
@@ -48,7 +58,10 @@ export const config = {
 
 export const live = {
   moloni: Boolean(config.moloni.developerId && config.moloni.clientSecret && config.moloni.username && config.moloni.password),
-  wa: Boolean(config.wa.phoneNumberId && config.wa.token && config.wa.recipient),
+  // WhatsApp via Twilio sandbox (no business) or Meta Cloud API; both need WA_TEST_RECIPIENT.
+  twilio: Boolean(config.twilio.accountSid && config.twilio.authToken && config.wa.recipient),
+  wa: Boolean(config.wa.recipient && ((config.twilio.accountSid && config.twilio.authToken) || (config.wa.phoneNumberId && config.wa.token))),
+  email: Boolean(config.email.resendKey && config.email.to),
   stripe: Boolean(config.stripe.secretKey),
   easypay: Boolean(config.easypay.accountId && config.easypay.apiKey),
 };
