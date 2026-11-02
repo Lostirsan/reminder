@@ -25,11 +25,21 @@ async function call(path, method = "GET", form) {
   return data;
 }
 
+// Tries MB WAY + Multibanco; if MB WAY is not enabled on the account, falls back to Multibanco only.
 export async function createPaymentLink(inv) {
+  try {
+    return await createSession(inv, ["mb_way", "multibanco"]);
+  } catch (e) {
+    if (!/mb_way/i.test(e.message)) throw e;
+    return createSession(inv, ["multibanco"]);
+  }
+}
+
+async function createSession(inv, methods) {
+  const types = Object.fromEntries(methods.map((m, i) => [`payment_method_types[${i}]`, m]));
   const s = await call("/checkout/sessions", "POST", {
     mode: "payment",
-    "payment_method_types[0]": "mb_way",
-    "payment_method_types[1]": "multibanco",
+    ...types,
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(Math.round(inv.amount * 100)),
