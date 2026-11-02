@@ -1,0 +1,12 @@
+{
+  "name": "pago-a-tempo-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototype: overdue-invoice reminders from Moloni via WhatsApp Cloud API with easypay MB WAY / Multibanco payments (test environments only).",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node scripts/check.js"
+  }
+}

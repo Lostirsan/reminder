@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pago a Tempo · Protótipo</title>
+<style>
+:root{--bg:#f5f6f3;--surface:#fff;--ink:#15211d;--muted:#5c6b65;--line:#dfe4df;--accent:#0e7a57;--accent-ink:#fff;--soft:#e2f2ea;--warn:#a86200;--warn-soft:#fbefd9;--bad:#b4232c;--bad-soft:#f9e1e2;--bubble:#d9fdd3;--wa:#e9e2d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--surface:#17201d;--ink:#e7eeea;--muted:#9aaaa3;--line:#2a3632;--accent:#3cc28e;--accent-ink:#06130e;--soft:#163327;--warn:#e3a54a;--warn-soft:#3a2b12;--bad:#ef6b72;--bad-soft:#3b1a1d;--bubble:#005c4b;--wa:#0b141a;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:22px;margin:0}h1 span{color:var(--accent)}
+.svc{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--muted)}
+.chip.live{background:var(--soft);color:var(--accent)}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin-top:16px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+h2{font-size:17px;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 10px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+td:nth-child(2){white-space:nowrap}tr.sel td{background:var(--soft)} tr{cursor:pointer}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.open{background:var(--warn-soft);color:var(--warn)}.late{background:var(--bad-soft);color:var(--bad)}.paid{background:var(--soft);color:var(--accent)}.rem{background:var(--line);color:var(--ink)}
+button{font:inherit;cursor:pointer;border-radius:9px;padding:8px 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.wa{background:var(--wa);border-radius:12px;padding:12px}
+.bubble{background:var(--bubble);border-radius:10px;padding:10px;white-space:pre-wrap;font-size:14px}
+.log{list-style:none;padding:0;margin:10px 0 0;font-size:13px}
+.log li{padding:6px 0;border-bottom:1px solid var(--line)}.log time{color:var(--muted);margin-right:6px}
+.err{background:var(--bad-soft);color:var(--bad);padding:8px 12px;border-radius:8px;margin-top:10px;font-size:14px}
+label{font-size:14px;display:flex;gap:6px;align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pago<span>.</span> a Tempo <small style="font-weight:400;color:var(--muted);font-size:14px">protótipo · dados de teste</small></h1>
+    <div class="svc" id="svc"></div>
+  </header>
+  <div class="err" id="err" hidden></div>
+  <div class="grid">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+        <div><h2>Faturas por receber</h2><p class="sub" id="src"></p></div>
+        <button id="refresh">Atualizar do Moloni</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>Cliente</th><th>Fatura</th><th class="num">Valor</th><th class="num">Atraso</th><th class="num">Juros + 40 €</th><th>Estado</th></tr></thead><tbody id="rows"></tbody></table></div>
+    </div>
+    <div class="panel" id="detail">
+      <h2 id="d-title">Escolha uma fatura</h2>
+      <p class="sub" id="d-sub"></p>
+      <label><input type="checkbox" id="interest" checked> Mencionar juros de mora no aviso firme</label>
+      <div class="actions">
+        <button class="primary" id="b-remind" disabled>Enviar lembrete WhatsApp</button>
+        <button id="b-mbway" disabled>Pedir MB WAY</button>
+        <button id="b-check" disabled>Verificar pagamento</button>
+      </div>
+      <div class="wa"><div class="bubble" id="preview">…</div></div>
+      <ul class="log" id="log"></ul>
+    </div>
+  </div>
+</div>
+<script>
+let S = { status: null, inv: [], sel: null };
+const $ = (id) => document.getElementById(id);
+const eur = (n) => new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(n);
+async function api(path, opts) {
+  const r = await fetch(path, opts); const d = await r.json();
+  if (!r.ok) throw new Error(d.error || r.status); return d;
+}
+function showErr(e) { $("err").textContent = e ? String(e.message || e) : ""; $("err").hidden = !e; }
+function pill(i) {
+  if (i.status === "paid") return '<span class="pill paid">Paga</span>';
+  if (i.status === "reminded") return '<span class="pill rem">Lembrete enviado</span>';
+  return i.daysLate > 0 ? '<span class="pill ' + (i.daysLate > 30 ? "late" : "open") + '">Em atraso</span>' : '<span class="pill rem">A vencer</span>';
+}
+function render() {
+  const live = S.status.live;
+  $("svc").innerHTML = [["Moloni", live.moloni], ["WhatsApp", live.wa], ["easypay", live.easypay]].map(([n, l]) => '<span class="chip ' + (l ? "live" : "") + '">' + n + ": " + (l ? "ligado (teste)" : "simulado") + "</span>").join("");
+  $("src").textContent = (live.moloni ? "Faturas reais da empresa de demonstração Moloni." : "Faturas fictícias (Moloni não configurado).") + (S.status.recipient ? " WhatsApp vai para " + S.status.recipient + "." : "");
+  $("rows").innerHTML = S.inv.map((i) => '<tr data-id="' + i.id + '" class="' + (i.id === S.sel ? "sel" : "") + '"><td><b>' + i.client + "</b></td><td>" + i.number + '</td><td class="num">' + eur(i.amount) + '</td><td class="num">' + (i.daysLate > 0 ? i.daysLate + " d" : "—") + '</td><td class="num">' + (i.daysLate > 0 ? eur(i.interest + i.compensation) : "—") + "</td><td>" + pill(i) + "</td></tr>").join("") || '<tr><td colspan="6">Sem faturas em aberto.</td></tr>';
+  const i = S.inv.find((x) => x.id === S.sel);
+  ["b-remind", "b-mbway", "b-check"].forEach((b) => ($(b).disabled = !i || i.status === "paid"));
+  if (!i) return;
+  $("d-title").textContent = i.client + " · " + i.number;
+  $("d-sub").textContent = eur(i.amount) + " · vencimento " + new Date(i.dueDate).toLocaleDateString("pt-PT") + (i.mb ? " · Multibanco " + i.mb.entity + " / " + i.mb.reference : "");
+  $("b-check").textContent = S.status.live.easypay ? "Verificar pagamento" : "Simular pagamento";
+  $("log").innerHTML = i.log.map((l) => "<li><time>" + new Date(l.at).toLocaleTimeString("pt-PT") + "</time>" + l.text + "</li>").join("");
+}
+async function preview() {
+  if (!S.sel) return;
+  try { const m = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/preview?interest=" + ($("interest").checked ? 1 : 0)); $("preview").textContent = m.text; } catch (e) { showErr(e); }
+}
+function upd(inv) { S.inv = S.inv.map((x) => (x.id === inv.id ? inv : x)); render(); preview(); }
+async function act(kind) {
+  showErr(null);
+  const btn = { remind: "b-remind", mbway: "b-mbway", check: "b-check" }[kind]; $(btn).disabled = true;
+  try {
+    let path = kind;
+    if (kind === "check" && !S.status.live.easypay) path = "mock-pay";
+    const d = await api("/api/invoices/" + encodeURIComponent(S.sel) + "/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ withInterest: $("interest").checked }) });
+    upd(d.invoice);
+  } catch (e) { showErr(e); render(); }
+}
+async function load(refresh) {
+  showErr(null);
+  try {
+    S.status = await api("/api/status");
+    S.inv = await api("/api/invoices" + (refresh ? "?refresh=1" : ""));
+    if (!S.sel && S.inv.length) S.sel = S.inv[0].id;
+    render(); preview();
+  } catch (e) { showErr(e); }
+}
+$("rows").onclick = (e) => { const tr = e.target.closest("tr[data-id]"); if (tr) { S.sel = tr.dataset.id; render(); preview(); } };
+$("refresh").onclick = () => load(true);
+$("interest").onchange = preview;
+$("b-remind").onclick = () => act("remind");
+$("b-mbway").onclick = () => act("mbway");
+$("b-check").onclick = () => act("check");
+// With easypay live, poll unpaid invoices that have a payment request every 5 s.
+setInterval(async () => {
+  if (!S.status?.live.easypay) return;
+  for (const i of S.inv.filter((x) => x.status !== "paid" && (x.mb || x.mbway))) {
+    try { const d = await api("/api/invoices/" + encodeURIComponent(i.id) + "/check", { method: "POST" }); if (d.invoice.status !== i.status) upd(d.invoice); } catch {}
+  }
+}, 5000);
+load(false);
+</script>
+</body>
+</html>
