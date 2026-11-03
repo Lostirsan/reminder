@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getSession } from "@/lib/auth";
-import { signInWithGoogle, signInWithEmail } from "../actions";
-import { ActionForm, SubmitButton } from "@/components/ActionForm";
-import { Card, inputClass } from "@/components/ui";
+import { signInWithGoogle } from "../actions";
+import { Card } from "@/components/ui";
+import { EmailLogin } from "./EmailLogin";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("login"))("title") };
@@ -28,10 +28,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <div className="my-5 flex items-center gap-3 text-xs text-zinc-400">
           <span className="h-px flex-1 bg-zinc-200" /> {t("or")} <span className="h-px flex-1 bg-zinc-200" />
         </div>
-        <ActionForm action={signInWithEmail} className="space-y-3">
-          <input name="email" type="email" required placeholder={t("emailPlaceholder")} className={inputClass} />
-          <SubmitButton>{t("emailButton")}</SubmitButton>
-        </ActionForm>
+        <EmailLogin next={next} labels={{
+          emailPlaceholder: t("emailPlaceholder"), emailButton: t("emailButton"), codeLabel: t("codeLabel"),
+          codeButton: t("codeButton"), otherEmail: t("otherEmail"),
+        }} />
       </Card>
     </div>
   );

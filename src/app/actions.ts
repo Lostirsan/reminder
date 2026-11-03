@@ -51,8 +51,20 @@ export async function signInWithEmail(_: ActionState, formData: FormData): Promi
     email,
     options: { emailRedirectTo: `${await origin()}/auth/callback?next=/app` },
   });
-  if (error) return fail("generic", error.message);
-  return { ok: (await getTranslations("login"))("linkSent", { email }) };
+  if (error) return fail(/rate limit/i.test(error.message) ? "rate_limit" : "generic", error.message);
+  return { ok: (await getTranslations("login"))("codeSent", { email }), email };
+}
+
+/** Second step: the 6-digit code from the same email (works on any device, unlike the link). */
+export async function verifyEmailCode(_: ActionState, formData: FormData): Promise<ActionState> {
+  const email = str(formData, "email");
+  const token = str(formData, "code").replace(/\D/g, "");
+  if (!/^\d{6,10}$/.test(token)) return { ...(await fail("bad_code")), email };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+  if (error) return { ...(await fail("bad_code")), email };
+  const next = str(formData, "next");
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/app");
 }
 
 // ------------------------------------------------------------------ company

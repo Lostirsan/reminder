@@ -38,8 +38,11 @@
     "google": "Continue with Google",
     "or": "or",
     "emailPlaceholder": "you@company.pt",
-    "emailButton": "Email me a sign-in link",
-    "linkSent": "We sent a link to {email}. Open it on this device."
+    "emailButton": "Send code",
+    "codeSent": "We sent a 6-digit code to {email}. You can also open the link in the email.",
+    "codeLabel": "Code from the email",
+    "codeButton": "Sign in",
+    "otherEmail": "Use another email"
   },
   "onboarding": {
     "title": "Your company",
@@ -68,7 +71,9 @@
     "already_member": "You already have a company.",
     "not_authenticated": "Please sign in first.",
     "forbidden": "Not allowed.",
-    "no_optin": "This customer hasn't agreed to WhatsApp messages yet. Tick the consent in the contact or use \"Open in my WhatsApp\"."
+    "no_optin": "This customer hasn't agreed to WhatsApp messages yet. Tick the consent in the contact or use \"Open in my WhatsApp\".",
+    "bad_code": "Invalid or expired code. Request a new one.",
+    "rate_limit": "Too many requests. Wait a minute and try again."
   },
   "common": {
     "saved": "Saved.",
