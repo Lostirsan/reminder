@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "title": "Pago a Tempo · invoices paid on time",
+    "description": "Automatic WhatsApp and email reminders for overdue invoices, with MB WAY and Multibanco payment links."
+  },
+  "footer": {
+    "privacy": "Privacy"
+  },
+  "nav": {
+    "invoices": "Invoices",
+    "add": "New invoice",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "signIn": "Sign in"
+  },
+  "home": {
+    "title": "Invoices paid on time, without awkward phone calls",
+    "subtitle": "Pago a Tempo reads invoices from your invoicing software and sends polite WhatsApp and email reminders with a link to pay by MB WAY or Multibanco.",
+    "cta": "Start free",
+    "free": "No card needed. Pilot phase.",
+    "s1": {
+      "title": "Connect Moloni",
+      "text": "We import open invoices and customer contacts. You can also add invoices by hand."
+    },
+    "s2": {
+      "title": "Automatic reminders",
+      "text": "Before the due date, then on day 1, 5 and 11 of delay. Weekdays only, 9:00–19:00."
+    },
+    "s3": {
+      "title": "One-click payment",
+      "text": "Every reminder has a link to pay by MB WAY or Multibanco. The invoice marks itself paid."
+    }
+  },
+  "login": {
+    "title": "Sign in to Pago a Tempo",
+    "sub": "New here? Signing in creates your account.",
+    "failed": "Sign-in failed",
+    "google": "Continue with Google",
+    "or": "or",
+    "emailPlaceholder": "you@company.pt",
+    "emailButton": "Email me a sign-in link",
+    "linkSent": "We sent a link to {email}. Open it on this device."
+  },
+  "onboarding": {
+    "title": "Your company",
+    "sub": "We only need a name to start. You can change everything later.",
+    "name": "Company name",
+    "sender": "Name your customers see",
+    "senderHint": "Signs the reminders. Defaults to the company name.",
+    "nifHint": "Optional. 9 digits.",
+    "language": "Language",
+    "create": "Create and continue"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "bad_email": "Invalid email.",
+    "bad_nif": "A NIF has 9 digits.",
+    "bad_rate": "Rate must be between 0 and 50 %.",
+    "confirm_name": "Type the exact company name to confirm.",
+    "required": "Fill in the required fields.",
+    "bad_amount": "Invalid amount.",
+    "bad_date": "Invalid date.",
+    "bad_phone": "Invalid mobile number. E.g. 912 345 678 or +351 912 345 678.",
+    "not_found": "Not found.",
+    "send_failed": "Sending failed",
+    "no_phone": "This customer has no mobile number.",
+    "no_email": "This customer has no email.",
+    "already_member": "You already have a company.",
+    "not_authenticated": "Please sign in first.",
+    "forbidden": "Not allowed.",
+    "no_optin": "This customer hasn't agreed to WhatsApp messages yet. Tick the consent in the contact or use \"Open in my WhatsApp\"."
+  },
+  "common": {
+    "saved": "Saved.",
+    "notFound": "Page not found.",
+    "home": "Home"
+  },
+  "dashboard": {
+    "title": "Invoices",
+    "add": "New invoice",
+    "overdueAmount": "Overdue",
+    "overdueCount": "Overdue invoices",
+    "paid30": "Paid to you (30 days)",
+    "auto": "Automatic reminders",
+    "autoOn": "On",
+    "autoOff": "Off",
+    "change": "Change",
+    "tabs": {
+      "overdue": "Overdue",
+      "upcoming": "Upcoming",
+      "paid": "Paid",
+      "all": "All"
+    },
+    "emptyTitle": "No invoices yet",
+    "emptySynced": "Moloni is connected. Open invoices appear after the sync.",
+    "emptyText": "Connect Moloni, add an invoice, or try it with sample data.",
+    "connectMoloni": "Connect Moloni",
+    "demo": "Load sample data",
+    "emptyTab": "Nothing here.",
+    "col": {
+      "invoice": "Invoice",
+      "customer": "Customer",
+      "amount": "Amount",
+      "due": "Due",
+      "status": "Status"
+    }
+  },
+  "status": {
+    "paid": "Paid",
+    "paused": "Paused",
+    "cancelled": "Cancelled",
+    "late": "{days} {days, plural, one {day} other {days}} late",
+    "dueToday": "Due today",
+    "dueIn": "Due in {days} {days, plural, one {day} other {days}}"
+  },
+  "newInvoice": {
+    "title": "New invoice",
+    "sub": "For invoices outside Moloni.",
+    "customer": "Customer",
+    "customerName": "Customer name",
+    "contactName": "Contact person",
+    "phone": "Mobile (WhatsApp)",
+    "phoneHint": "Portuguese numbers without the country code work too.",
+    "customerLanguage": "Reminder language",
+    "invoice": "Invoice",
+    "number": "Number",
+    "amount": "Amount due (€)",
+    "due": "Due date",
+    "save": "Save invoice",
+    "optIn": "The customer agreed to receive reminders on WhatsApp",
+    "optInHint": "Required by WhatsApp Business rules. Without it we only send email (or use \"Open in my WhatsApp\")."
+  },
+  "invoice": {
+    "back": "Invoices",
+    "title": "Invoice {number}",
+    "amount": "Amount due",
+    "due": "Due date",
+    "interest": "Late interest",
+    "compensation": "Compensation",
+    "payLink": "Payment link",
+    "nextMessage": "Next reminder: {step}",
+    "sendWhatsapp": "Send WhatsApp",
+    "sendEmail": "Send email",
+    "walink": "Open in my WhatsApp",
+    "walinkHint": "\"Open in my WhatsApp\" opens the chat in your own WhatsApp with the text ready, no API needed.",
+    "history": "History",
+    "msgStatus": {
+      "queued": "queued",
+      "sent": "sent",
+      "delivered": "delivered",
+      "read": "read",
+      "failed": "failed",
+      "simulated": "simulated"
+    },
+    "showText": "Show text",
+    "noHistory": "Nothing sent yet.",
+    "actions": "Actions",
+    "markPaid": "Mark as paid",
+    "pause": "Pause reminders",
+    "resume": "Resume reminders",
+    "reopen": "Reopen",
+    "delete": "Delete invoice",
+    "customer": "Customer contact",
+    "contactName": "Contact person",
+    "phone": "Mobile",
+    "language": "Reminder language",
+    "saveCustomer": "Save contact",
+    "sent": "Reminder sent.",
+    "sentSimulated": "Reminder logged (demo mode: real sending isn't configured).",
+    "optIn": "Agreed to WhatsApp reminders"
+  },
+  "step": {
+    "pre": "friendly reminder",
+    "d1": "1st reminder",
+    "d5": "date request",
+    "firm": "firm notice",
+    "thanks": "thank-you"
+  },
+  "settings": {
+    "title": "Settings",
+    "company": "Company",
+    "name": "Company name",
+    "sender": "Name your customers see",
+    "senderHint": "Signs the reminders.",
+    "language": "Language",
+    "reminders": "Reminders",
+    "auto": "Send reminders automatically",
+    "autoHint": "Before the due date and on day 1, 5 and 11 of delay. Weekdays, 9:00–19:00.",
+    "interest": "Mention late interest and the 40 € compensation in the firm notice",
+    "interestHint": "Decree-Law 62/2013, business-to-business only.",
+    "rate": "Commercial late interest rate (%)",
+    "rateHint": "2nd half of 2026: 10.40 %.",
+    "save": "Save",
+    "integrations": "Invoicing software",
+    "moloniFailed": "Couldn't connect Moloni.",
+    "int": {
+      "connected": "connected",
+      "error": "error",
+      "disconnected": "disconnected"
+    },
+    "lastSync": "last sync",
+    "moloniHint": "Imports open invoices every 15 minutes.",
+    "moloniNotSetUp": "The Moloni connection isn't configured on this installation yet.",
+    "syncNow": "Sync now",
+    "disconnect": "Disconnect",
+    "connect": "Connect Moloni",
+    "soon": "coming soon",
+    "channels": "Sending channels",
+    "demoMode": "demo mode",
+    "payments": "Payments",
+    "channelsHint": "In demo mode messages are logged but not sent.",
+    "danger": "Delete company",
+    "deleteHint": "Deletes the company, customers, invoices and history. This can't be undone. Type the company name to confirm.",
+    "delete": "Delete everything"
+  },
+  "pay": {
+    "title": "Invoice {number}",
+    "due": "Due: {date}",
+    "alreadyPaid": "This invoice is already paid. Thank you!",
+    "error": "We couldn't open the payment. Please try again in a moment.",
+    "payButton": "Pay now",
+    "methods": "MB WAY or Multibanco reference. Secure payment by Stripe.",
+    "demoButton": "Simulate payment",
+    "demoHint": "Demo mode: no money moves.",
+    "unavailable": "Online payment isn't available yet. Please contact the supplier.",
+    "thanksTitle": "Thank you!",
+    "thanksPaid": "Payment received.",
+    "thanksPending": "If you chose Multibanco, the invoice is marked paid as soon as you pay the reference. Nothing else to do."
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "draft": "Provisional version for the pilot phase.",
+    "who": {
+      "h": "Who we are",
+      "p": "Pago a Tempo is a pilot-phase service built in Coimbra. For the data of our business users' customers we act as a processor (GDPR art. 28): the business is the controller."
+    },
+    "data": {
+      "h": "What data we process",
+      "p": "From your account: email and company name. From your company's customers: name, contact person, mobile, email, open invoices and messages sent."
+    },
+    "why": {
+      "h": "What for",
+      "p": "Only to send invoice payment reminders and record payments on your company's behalf. We don't sell data or send advertising."
+    },
+    "where": {
+      "h": "Where it is stored",
+      "p": "Database in the European Union (Supabase, Frankfurt). Sub-processors: Supabase, Cloudflare, Stripe (payments), Twilio or Meta (WhatsApp) and Resend (email)."
+    },
+    "keep": {
+      "h": "How long",
+      "p": "While the account exists. Deleting the company in Settings erases all its data immediately."
+    },
+    "rights": {
+      "h": "Your rights",
+      "p": "Access, rectification, erasure and portability. Contact: yegortatarenko06@gmail.com. You can also complain to the CNPD."
+    }
+  }
+}
