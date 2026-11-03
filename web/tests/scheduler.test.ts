@@ -4,7 +4,7 @@ import type { Customer, Invoice, Organization } from "@/lib/types";
 
 const org = { id: "o", timezone: "Europe/Lisbon", channel_whatsapp: true, channel_email: true } as Organization;
 const now = new Date("2026-11-03T10:00:00Z");
-const cust = (over: Partial<Customer> = {}) => ({ id: "c", phone: "351912345678", email: "a@b.pt", ...over }) as Customer;
+const cust = (over: Partial<Customer> = {}) => ({ id: "c", phone: "351912345678", email: "a@b.pt", whatsapp_opt_in: true, ...over }) as Customer;
 const inv = (id: string, due: string, over: Partial<Invoice> = {}, c = cust()) =>
   ({ id, due_date: due, status: "open", ...over, customer: c }) as Invoice & { customer: Customer };
 
@@ -27,5 +27,9 @@ describe("planReminders", () => {
   it("uses only channels with contact data and enabled", () => {
     const p = planReminders({ ...org, channel_email: false }, [inv("a", "2026-11-02", {}, cust({ phone: null })), inv("b", "2026-11-02")], [], now);
     expect(p.map((x) => [x.invoice.id, x.channels])).toEqual([["b", ["whatsapp"]]]);
+  });
+  it("no WhatsApp without the customer's opt-in", () => {
+    const p = planReminders(org, [inv("a", "2026-11-02", {}, cust({ whatsapp_opt_in: false }))], [], now);
+    expect(p[0].channels).toEqual(["email"]);
   });
 });

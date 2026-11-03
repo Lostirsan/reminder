@@ -78,6 +78,7 @@ export async function sendReminder(
   if (channel === "whatsapp") {
     recipient = normalizePhone(b.customer.phone);
     if (!recipient) throw new SendError("no_phone");
+    if (!b.customer.whatsapp_opt_in) throw new SendError("no_optin");
     recipient = normalizePhone(process.env.WHATSAPP_TEST_RECIPIENT) || recipient;
   } else {
     recipient = b.customer.email?.trim() || null;
@@ -148,7 +149,7 @@ export async function markPaid(db: SupabaseClient, b: Bundle, how: string) {
     .select("id");
   if (!data?.length) return false;
   await logActivity(db, b.org.id, b.invoice.id, "paid", how);
-  const channel = b.org.channel_whatsapp && b.customer.phone && whatsappProvider() ? "whatsapp"
+  const channel = b.org.channel_whatsapp && b.customer.phone && b.customer.whatsapp_opt_in && whatsappProvider() ? "whatsapp"
     : b.org.channel_email && b.customer.email && resend.resendConfigured() ? "email" : null;
   if (channel) {
     try { await sendReminder(db, b, channel, { step: "thanks", trigger: "auto" }); } catch { /* thank-you is optional */ }

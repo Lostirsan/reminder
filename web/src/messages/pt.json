@@ -3,16 +3,33 @@
     "title": "Pago a Tempo · faturas pagas a tempo",
     "description": "Lembretes automáticos por WhatsApp e email para faturas em atraso, com pagamento por MB WAY e Multibanco."
   },
-  "footer": { "privacy": "Privacidade" },
-  "nav": { "invoices": "Faturas", "add": "Nova fatura", "settings": "Definições", "signOut": "Sair", "signIn": "Entrar" },
+  "footer": {
+    "privacy": "Privacidade"
+  },
+  "nav": {
+    "invoices": "Faturas",
+    "add": "Nova fatura",
+    "settings": "Definições",
+    "signOut": "Sair",
+    "signIn": "Entrar"
+  },
   "home": {
     "title": "Faturas pagas a tempo, sem telefonemas incómodos",
     "subtitle": "O Pago a Tempo lê as faturas do seu software de faturação e envia lembretes educados por WhatsApp e email, com um link para pagar por MB WAY ou Multibanco.",
     "cta": "Começar grátis",
     "free": "Sem cartão. Em fase piloto.",
-    "s1": { "title": "Ligue o Moloni", "text": "Importamos as faturas em aberto e os contactos dos clientes. Também pode adicionar faturas à mão." },
-    "s2": { "title": "Lembretes automáticos", "text": "Antes do vencimento, no 1.º, 5.º e 11.º dia de atraso. Só em dias úteis, das 9h às 19h." },
-    "s3": { "title": "Pagamento num clique", "text": "Cada lembrete leva um link para pagar por MB WAY ou Multibanco. A fatura fica paga sozinha." }
+    "s1": {
+      "title": "Ligue o Moloni",
+      "text": "Importamos as faturas em aberto e os contactos dos clientes. Também pode adicionar faturas à mão."
+    },
+    "s2": {
+      "title": "Lembretes automáticos",
+      "text": "Antes do vencimento, no 1.º, 5.º e 11.º dia de atraso. Só em dias úteis, das 9h às 19h."
+    },
+    "s3": {
+      "title": "Pagamento num clique",
+      "text": "Cada lembrete leva um link para pagar por MB WAY ou Multibanco. A fatura fica paga sozinha."
+    }
   },
   "login": {
     "title": "Entrar no Pago a Tempo",
@@ -50,9 +67,14 @@
     "no_email": "Este cliente não tem email.",
     "already_member": "Já tem uma empresa.",
     "not_authenticated": "Entre primeiro.",
-    "forbidden": "Sem permissão."
+    "forbidden": "Sem permissão.",
+    "no_optin": "Este cliente ainda não aceitou receber WhatsApp. Marque o consentimento no contacto ou use \"Abrir no meu WhatsApp\"."
   },
-  "common": { "saved": "Guardado.", "notFound": "Página não encontrada.", "home": "Início" },
+  "common": {
+    "saved": "Guardado.",
+    "notFound": "Página não encontrada.",
+    "home": "Início"
+  },
   "dashboard": {
     "title": "Faturas",
     "add": "Nova fatura",
@@ -63,14 +85,25 @@
     "autoOn": "Ligados",
     "autoOff": "Desligados",
     "change": "Alterar",
-    "tabs": { "overdue": "Em atraso", "upcoming": "A vencer", "paid": "Pagas", "all": "Todas" },
+    "tabs": {
+      "overdue": "Em atraso",
+      "upcoming": "A vencer",
+      "paid": "Pagas",
+      "all": "Todas"
+    },
     "emptyTitle": "Ainda não há faturas",
     "emptySynced": "O Moloni está ligado. As faturas em aberto aparecem após a sincronização.",
     "emptyText": "Ligue o Moloni, adicione uma fatura ou experimente com dados de exemplo.",
     "connectMoloni": "Ligar Moloni",
     "demo": "Carregar exemplo",
     "emptyTab": "Nada aqui.",
-    "col": { "invoice": "Fatura", "customer": "Cliente", "amount": "Valor", "due": "Vencimento", "status": "Estado" }
+    "col": {
+      "invoice": "Fatura",
+      "customer": "Cliente",
+      "amount": "Valor",
+      "due": "Vencimento",
+      "status": "Estado"
+    }
   },
   "status": {
     "paid": "Paga",
@@ -91,14 +124,16 @@
     "customerLanguage": "Idioma dos lembretes",
     "invoice": "Fatura",
     "number": "Número",
-    "amount": "Valor em dívida (€)",
+    "amount": "Valor em aberto (€)",
     "due": "Data de vencimento",
-    "save": "Guardar fatura"
+    "save": "Guardar fatura",
+    "optIn": "O cliente aceitou receber lembretes por WhatsApp",
+    "optInHint": "Exigido pelas regras do WhatsApp Business. Sem isto enviamos só email (ou use \"Abrir no meu WhatsApp\")."
   },
   "invoice": {
     "back": "Faturas",
     "title": "Fatura {number}",
-    "amount": "Em dívida",
+    "amount": "Em aberto",
     "due": "Vencimento",
     "interest": "Juros de mora",
     "compensation": "Indemnização",
@@ -109,7 +144,14 @@
     "walink": "Abrir no meu WhatsApp",
     "walinkHint": "\"Abrir no meu WhatsApp\" abre a conversa no seu próprio WhatsApp com o texto pronto, sem API.",
     "history": "Histórico",
-    "msgStatus": { "queued": "na fila", "sent": "enviado", "delivered": "entregue", "read": "lido", "failed": "falhou", "simulated": "simulado" },
+    "msgStatus": {
+      "queued": "na fila",
+      "sent": "enviado",
+      "delivered": "entregue",
+      "read": "lido",
+      "failed": "falhou",
+      "simulated": "simulado"
+    },
     "showText": "Ver texto",
     "noHistory": "Ainda nada enviado.",
     "actions": "Ações",
@@ -124,9 +166,16 @@
     "language": "Idioma dos lembretes",
     "saveCustomer": "Guardar contacto",
     "sent": "Lembrete enviado.",
-    "sentSimulated": "Lembrete registado (modo demo: o envio real não está configurado)."
+    "sentSimulated": "Lembrete registado (modo demo: o envio real não está configurado).",
+    "optIn": "Aceitou lembretes por WhatsApp"
   },
-  "step": { "pre": "lembrete amigável", "d1": "1.º lembrete", "d5": "pedido de data", "firm": "aviso firme", "thanks": "agradecimento" },
+  "step": {
+    "pre": "lembrete amigável",
+    "d1": "1.º lembrete",
+    "d5": "pedido de data",
+    "firm": "aviso firme",
+    "thanks": "agradecimento"
+  },
   "settings": {
     "title": "Definições",
     "company": "Empresa",
@@ -144,7 +193,11 @@
     "save": "Guardar",
     "integrations": "Software de faturação",
     "moloniFailed": "Não foi possível ligar o Moloni.",
-    "int": { "connected": "ligado", "error": "erro", "disconnected": "desligado" },
+    "int": {
+      "connected": "ligado",
+      "error": "erro",
+      "disconnected": "desligado"
+    },
     "lastSync": "última sincronização",
     "moloniHint": "Importa as faturas em aberto a cada 15 minutos.",
     "moloniNotSetUp": "A ligação ao Moloni ainda não está configurada nesta instalação.",
@@ -177,11 +230,29 @@
   "privacy": {
     "title": "Política de privacidade",
     "draft": "Versão provisória da fase piloto.",
-    "who": { "h": "Quem somos", "p": "O Pago a Tempo é um serviço em fase piloto criado em Coimbra. Para os dados dos clientes das empresas que o usam, atuamos como subcontratante (art. 28.º RGPD): a empresa é a responsável pelo tratamento." },
-    "data": { "h": "Que dados tratamos", "p": "Da sua conta: email e nome da empresa. Dos clientes da sua empresa: nome, pessoa de contacto, telemóvel, email, faturas em aberto e mensagens enviadas." },
-    "why": { "h": "Para quê", "p": "Apenas para enviar lembretes de pagamento de faturas e registar pagamentos, em nome da sua empresa. Não vendemos dados nem enviamos publicidade." },
-    "where": { "h": "Onde ficam", "p": "Base de dados na União Europeia (Supabase, Frankfurt). Subcontratantes: Supabase, Cloudflare, Stripe (pagamentos), Twilio ou Meta (WhatsApp) e Resend (email)." },
-    "keep": { "h": "Durante quanto tempo", "p": "Enquanto a conta existir. Ao apagar a empresa nas Definições, todos os dados são apagados de imediato." },
-    "rights": { "h": "Os seus direitos", "p": "Acesso, retificação, apagamento e portabilidade. Contacto: yegortatarenko06@gmail.com. Pode também reclamar junto da CNPD." }
+    "who": {
+      "h": "Quem somos",
+      "p": "O Pago a Tempo é um serviço em fase piloto criado em Coimbra. Para os dados dos clientes das empresas que o usam, atuamos como subcontratante (art. 28.º RGPD): a empresa é a responsável pelo tratamento."
+    },
+    "data": {
+      "h": "Que dados tratamos",
+      "p": "Da sua conta: email e nome da empresa. Dos clientes da sua empresa: nome, pessoa de contacto, telemóvel, email, faturas em aberto e mensagens enviadas."
+    },
+    "why": {
+      "h": "Para quê",
+      "p": "Apenas para enviar lembretes de pagamento de faturas e registar pagamentos, em nome da sua empresa. Não vendemos dados nem enviamos publicidade."
+    },
+    "where": {
+      "h": "Onde ficam",
+      "p": "Base de dados na União Europeia (Supabase, Frankfurt). Subcontratantes: Supabase, Cloudflare, Stripe (pagamentos), Twilio ou Meta (WhatsApp) e Resend (email)."
+    },
+    "keep": {
+      "h": "Durante quanto tempo",
+      "p": "Enquanto a conta existir. Ao apagar a empresa nas Definições, todos os dados são apagados de imediato."
+    },
+    "rights": {
+      "h": "Os seus direitos",
+      "p": "Acesso, retificação, apagamento e portabilidade. Contacto: yegortatarenko06@gmail.com. Pode também reclamar junto da CNPD."
+    }
   }
 }

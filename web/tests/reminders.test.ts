@@ -41,6 +41,7 @@ describe("messages", () => {
     const m = composeMessage({ ...base, locale: "pt", step: "firm" });
     expect(m.text).toContain("Decreto-Lei n.º 62/2013");
     expect(m.text).toContain("3,57 €");
+    expect(m.text).toContain("prescindimos dos juros");
     expect(m.text).toContain("https://app.example/pay/abc");
     expect(m.text).toContain("01/10/2026");
     expect(m.text.trim().endsWith("Distribuidora")).toBe(true);
@@ -51,6 +52,14 @@ describe("messages", () => {
     expect(m.text).toContain("overdue since 01/10/2026 (33 days)");
     expect(m.text).not.toContain("Decree");
     expect(m.subject).toBe("Invoice FT 2026/131 · Distribuidora");
+  });
+  it("no collection or threat wording in any step (WhatsApp Business Policy)", () => {
+    for (const locale of ["pt", "en"] as const)
+      for (const step of ["pre", "d1", "d5", "firm", "thanks"] as const) {
+        const t = composeMessage({ ...base, locale, step }).text.toLowerCase();
+        for (const w of ["dívida", "divida", "cobrança", "cobranca", "tribunal", "advogado", "injunção", "debt", "collection", "court", "lawyer", "legal action"])
+          expect(t, `${locale}/${step}: ${w}`).not.toContain(w);
+      }
   });
   it("thank-you has no pay link", () => {
     expect(composeMessage({ ...base, locale: "pt", step: "thanks" }).text).not.toContain("http");

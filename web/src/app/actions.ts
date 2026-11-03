@@ -118,6 +118,7 @@ export async function addInvoice(_: ActionState, formData: FormData): Promise<Ac
     phone,
     email: str(formData, "email") || null,
     locale: str(formData, "customer_locale") === "en" ? "en" : "pt",
+    whatsapp_opt_in: formData.get("whatsapp_opt_in") === "on",
   }).select("id").single();
   if (ce) return fail("generic", ce.message);
   const { data: inv, error } = await supabase.from("invoices").insert({
@@ -137,6 +138,7 @@ export async function updateCustomer(_: ActionState, formData: FormData): Promis
     phone,
     email: str(formData, "email") || null,
     locale: str(formData, "locale") === "en" ? "en" : "pt",
+    whatsapp_opt_in: formData.get("whatsapp_opt_in") === "on",
   }).eq("id", str(formData, "customer_id"));
   if (error) return fail("generic", error.message);
   revalidatePath("/app", "layout");
@@ -195,7 +197,7 @@ export async function loadDemoData() {
   for (const [i, [name, contact, amount, late, number]] of rows.entries()) {
     const { data: c } = await supabase.from("customers").insert({
       organization_id: org.id, source: "demo", external_id: `demo-${i}`, name, contact_name: contact,
-      phone: testPhone ?? `35191000000${i}`, email: process.env.EMAIL_TEST_RECIPIENT || `demo${i}@example.com`,
+      phone: testPhone ?? `35191000000${i}`, whatsapp_opt_in: true, email: process.env.EMAIL_TEST_RECIPIENT || `demo${i}@example.com`,
     }).select("id").single();
     if (c) await supabase.from("invoices").insert({
       organization_id: org.id, customer_id: c.id, source: "demo", external_id: `demo-${i}`,

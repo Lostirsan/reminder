@@ -3,6 +3,7 @@
 import type { Locale, Step } from "./types";
 
 export const COMPENSATION_EUR = 40;
+export const WAIVER_DAYS = 7;
 
 export function eur(n: number, locale: Locale = "pt") {
   return new Intl.NumberFormat(locale === "pt" ? "pt-PT" : "en-IE", { style: "currency", currency: "EUR" })
@@ -103,10 +104,12 @@ export function composeMessage(i: ComposeInput) {
       body = pt
         ? `Bom dia ${i.contactName}, a fatura ${n} de ${amount} está vencida desde ${due} (${i.days} dias).`
         : `Hello ${i.contactName}, invoice ${n} for ${amount} has been overdue since ${due} (${i.days} days).`;
+      // Framed as goodwill (interest waived if paid soon), never as a threat: WhatsApp's
+      // Business Policy allows a supplier's own invoice reminders but not debt collection.
       if (i.mentionInterest) {
         body += pt
-          ? ` Nos termos do Decreto-Lei n.º 62/2013, o atraso dá lugar a juros de mora (neste momento ${eur(li.interest, L)}) e a uma indemnização de ${eur(COMPENSATION_EUR, L)}. Preferimos resolver de forma simples:`
-          : ` Under Portuguese Decree-Law 62/2013, late payment accrues statutory interest (currently ${eur(li.interest, L)}) and a ${eur(COMPENSATION_EUR, L)} compensation. We'd rather settle this simply:`;
+          ? ` Se o pagamento for feito nos próximos ${WAIVER_DAYS} dias, prescindimos dos juros de mora (${eur(li.interest, L)} até hoje) e da indemnização de ${eur(COMPENSATION_EUR, L)} previstos no Decreto-Lei n.º 62/2013. Pode pagar aqui:`
+          : ` If it is paid within the next ${WAIVER_DAYS} days, we waive the late interest (${eur(li.interest, L)} so far) and the ${eur(COMPENSATION_EUR, L)} compensation provided for by Portuguese Decree-Law 62/2013. You can pay here:`;
       } else {
         body += pt ? " Agradecemos a regularização. Pode pagar aqui:" : " Please settle it here:";
       }

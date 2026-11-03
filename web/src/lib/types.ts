@@ -27,6 +27,7 @@ export type Customer = {
   phone: string | null;
   email: string | null;
   locale: Locale;
+  whatsapp_opt_in: boolean;
 };
 
 export type Invoice = {

@@ -50,6 +50,8 @@ create table public.customers (
   phone text,          -- E.164 digits without '+', e.g. 351912345678
   email text,
   locale text not null default 'pt' check (locale in ('pt', 'en')),
+  -- WhatsApp Business Policy: message only customers who agreed to get WhatsApp from this supplier.
+  whatsapp_opt_in boolean not null default false,
   created_at timestamptz not null default now(),
   unique (organization_id, source, external_id)
 );

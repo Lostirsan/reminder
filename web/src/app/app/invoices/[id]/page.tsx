@@ -111,6 +111,10 @@ export default async function InvoicePage({ params }: PageProps<"/app/invoices/[
               <input type="hidden" name="customer_id" value={customer.id} />
               <Field label={t("contactName")}><input name="contact_name" defaultValue={customer.contact_name ?? ""} className={inputClass} /></Field>
               <Field label={t("phone")}><input name="phone" type="tel" defaultValue={customer.phone ? `+${customer.phone}` : ""} className={inputClass} /></Field>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="whatsapp_opt_in" defaultChecked={customer.whatsapp_opt_in} className="mt-1 h-4 w-4 accent-emerald-700" />
+                <span>{t("optIn")}</span>
+              </label>
               <Field label="Email"><input name="email" type="email" defaultValue={customer.email ?? ""} className={inputClass} /></Field>
               <Field label={t("language")}>
                 <select name="locale" defaultValue={customer.locale} className={inputClass}>

@@ -11,7 +11,7 @@ describe.skipIf(!on)("scheduler on a real database", () => {
     const { data: org } = await db.from("organizations").insert({ name: "Tick Test", sender_name: "Tick", auto_reminders: true }).select().single();
     const day = (n: number) => new Date(Date.parse("2026-11-03") + n * 864e5).toISOString().slice(0, 10);
     for (const [i, late] of [1, 6, 30, 0].entries()) {
-      const { data: c } = await db.from("customers").insert({ organization_id: org.id, name: `C${i}`, phone: "351912345678", email: "c@example.pt" }).select().single();
+      const { data: c } = await db.from("customers").insert({ organization_id: org.id, name: `C${i}`, phone: "351912345678", whatsapp_opt_in: true, email: "c@example.pt" }).select().single();
       await db.from("invoices").insert({ organization_id: org.id, customer_id: c.id, number: `T${i}`, amount: 100, due_date: day(-late) });
     }
     const night = await runTick(db, new Date("2026-11-03T22:00:00Z"));

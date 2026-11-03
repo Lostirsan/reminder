@@ -25,7 +25,7 @@ export function planReminders(org: Organization, invoices: (Invoice & { customer
     if (history.some((h) => STEP_ORDER.indexOf(h.step) >= STEP_ORDER.indexOf(step))) continue;
     if (history.some((h) => now.getTime() - Date.parse(h.created_at) < MIN_GAP_MS)) continue;
     const channels: ("whatsapp" | "email")[] = [];
-    if (org.channel_whatsapp && inv.customer.phone) channels.push("whatsapp");
+    if (org.channel_whatsapp && inv.customer.phone && inv.customer.whatsapp_opt_in) channels.push("whatsapp");
     if (org.channel_email && inv.customer.email) channels.push("email");
     if (channels.length) plan.push({ invoice: inv, step, channels });
   }
