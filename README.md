@@ -1,5 +1,7 @@
 # Pago a Tempo: API prototype
 
+> **The production app now lives in [`web/`](web/README.md)** (Next.js + Supabase + Cloudflare: accounts, database, PT/EN, scheduled reminders, webhooks). This root folder is the original single-file prototype; it keeps working until the new app replaces it.
+
 A small Node.js prototype that shows the overdue-invoice reminder flow end to end with **free test environments only**:
 
 1. Reads open invoices from a **Moloni** demo company.
