@@ -65,4 +65,4 @@ export type Message = {
 
 export type Activity = { id: number; invoice_id: string | null; kind: string; detail: string; created_at: string };
 
-export type ActionState = { ok?: string; error?: string } | undefined;
+export type ActionState = { ok?: string; error?: string; email?: string } | undefined;

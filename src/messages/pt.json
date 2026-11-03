@@ -38,8 +38,11 @@
     "google": "Continuar com Google",
     "or": "ou",
     "emailPlaceholder": "o.seu@email.pt",
-    "emailButton": "Enviar link de acesso",
-    "linkSent": "Enviámos um link para {email}. Abra-o neste dispositivo."
+    "emailButton": "Enviar código",
+    "codeSent": "Enviámos um código de 6 dígitos para {email}. Também pode abrir o link no email.",
+    "codeLabel": "Código do email",
+    "codeButton": "Entrar",
+    "otherEmail": "Usar outro email"
   },
   "onboarding": {
     "title": "A sua empresa",
@@ -68,7 +71,9 @@
     "already_member": "Já tem uma empresa.",
     "not_authenticated": "Entre primeiro.",
     "forbidden": "Sem permissão.",
-    "no_optin": "Este cliente ainda não aceitou receber WhatsApp. Marque o consentimento no contacto ou use \"Abrir no meu WhatsApp\"."
+    "no_optin": "Este cliente ainda não aceitou receber WhatsApp. Marque o consentimento no contacto ou use \"Abrir no meu WhatsApp\".",
+    "bad_code": "Código inválido ou expirado. Peça um novo.",
+    "rate_limit": "Demasiados pedidos. Aguarde um minuto e tente de novo."
   },
   "common": {
     "saved": "Guardado.",
