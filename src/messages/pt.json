@@ -11,7 +11,8 @@
     "add": "Nova fatura",
     "settings": "Definições",
     "signOut": "Sair",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "bank": "Banco"
   },
   "home": {
     "title": "Faturas pagas a tempo, sem telefonemas incómodos",
@@ -73,7 +74,13 @@
     "forbidden": "Sem permissão.",
     "no_optin": "Este cliente ainda não aceitou receber WhatsApp. Marque o consentimento no contacto ou use \"Abrir no meu WhatsApp\".",
     "bad_code": "Código inválido ou expirado. Peça um novo.",
-    "rate_limit": "Demasiados pedidos. Aguarde um minuto e tente de novo."
+    "rate_limit": "Demasiados pedidos. Aguarde um minuto e tente de novo.",
+    "bad_iban": "IBAN inválido. Confira os dígitos.",
+    "no_file": "Escolha um ficheiro.",
+    "file_too_big": "Ficheiro demasiado grande (máx. 2 MB).",
+    "not_csv": "Exporte o extrato em CSV (no Excel: Guardar como → CSV).",
+    "csv_no_header": "Não encontrámos as colunas de data e valor neste ficheiro. É um extrato em CSV?",
+    "csv_no_rows": "O extrato não tem recebimentos (créditos)."
   },
   "common": {
     "saved": "Guardado.",
@@ -108,7 +115,8 @@
       "amount": "Valor",
       "due": "Vencimento",
       "status": "Estado"
-    }
+    },
+    "toConfirm": "{count, plural, one {1 pagamento} other {# pagamentos}} por confirmar"
   },
   "status": {
     "paid": "Paga",
@@ -172,7 +180,10 @@
     "saveCustomer": "Guardar contacto",
     "sent": "Lembrete enviado.",
     "sentSimulated": "Lembrete registado (modo demo: o envio real não está configurado).",
-    "optIn": "Aceitou lembretes por WhatsApp"
+    "optIn": "Aceitou lembretes por WhatsApp",
+    "claimed": "O cliente indicou que já pagou ({when}). Os lembretes estão parados até confirmar.",
+    "claimConfirm": "Recebi, marcar como paga",
+    "claimReject": "Ainda não recebi"
   },
   "step": {
     "pre": "lembrete amigável",
@@ -216,7 +227,15 @@
     "channelsHint": "Em modo demo as mensagens ficam registadas mas não são enviadas.",
     "danger": "Apagar empresa",
     "deleteHint": "Apaga a empresa, clientes, faturas e histórico. Não pode ser desfeito. Escreva o nome da empresa para confirmar.",
-    "delete": "Apagar tudo"
+    "delete": "Apagar tudo",
+    "paymentsTitle": "Como os clientes pagam",
+    "paymentsText": "O dinheiro vai diretamente para a sua conta. O IBAN e o número da fatura aparecem nos lembretes e na página de pagamento.",
+    "holder": "Titular da conta",
+    "mbway": "MB WAY (opcional)",
+    "mbwayHint": "Telemóvel para receber por MB WAY.",
+    "paymentsBankHint": "Para a fatura ficar paga sozinha, carregue o extrato ou ligue o banco em",
+    "bankPage": "Banco",
+    "transferOnly": "transferência (IBAN)"
   },
   "pay": {
     "title": "Fatura {number}",
@@ -230,7 +249,16 @@
     "unavailable": "O pagamento online ainda não está disponível. Contacte o fornecedor.",
     "thanksTitle": "Obrigado!",
     "thanksPaid": "Pagamento recebido.",
-    "thanksPending": "Se escolheu Multibanco, a fatura fica paga assim que pagar a referência. Não precisa de fazer mais nada."
+    "thanksPending": "Se escolheu Multibanco, a fatura fica paga assim que pagar a referência. Não precisa de fazer mais nada.",
+    "transfer": "Pagar por transferência",
+    "orTransfer": "Ou por transferência",
+    "holder": "Titular",
+    "amount": "Valor",
+    "reference": "Descrição",
+    "referenceHint": "Escreva o número da fatura na descrição da transferência para o pagamento ser reconhecido.",
+    "claimButton": "Já paguei",
+    "claimHint": "Avisamos o fornecedor e paramos os lembretes.",
+    "claimedThanks": "Obrigado! Avisámos o fornecedor. Os lembretes param enquanto o pagamento é confirmado."
   },
   "privacy": {
     "title": "Política de privacidade",
@@ -249,7 +277,7 @@
     },
     "where": {
       "h": "Onde ficam",
-      "p": "Base de dados na União Europeia (Supabase, Frankfurt). Subcontratantes: Supabase, Cloudflare, Stripe (pagamentos), Twilio ou Meta (WhatsApp) e Resend (email)."
+      "p": "Base de dados na União Europeia (Supabase, Frankfurt). Subcontratantes: Supabase, Cloudflare, Stripe (pagamentos), Enable Banking (leitura de movimentos bancários, só se ligar o banco), Twilio ou Meta (WhatsApp) e Resend (email)."
     },
     "keep": {
       "h": "Durante quanto tempo",
@@ -258,6 +286,56 @@
     "rights": {
       "h": "Os seus direitos",
       "p": "Acesso, retificação, apagamento e portabilidade. Contacto: yegortatarenko06@gmail.com. Pode também reclamar junto da CNPD."
+    }
+  },
+  "bank": {
+    "title": "Banco",
+    "sub": "Os pagamentos que chegam à sua conta fecham as faturas sozinhos.",
+    "noIban": "Ainda não indicou o IBAN onde os clientes pagam.",
+    "addIban": "Adicionar IBAN",
+    "toConfirm": "Por confirmar",
+    "isItFor": "É o pagamento da fatura",
+    "yesPaid": "Sim, está paga",
+    "notThis": "Não é esta",
+    "notReceived": "Ainda não recebi",
+    "claimedAt": "O cliente carregou em \"Já paguei\" a {when}",
+    "uploadTitle": "Carregar extrato",
+    "uploadText": "Exporte os movimentos do homebanking em CSV e carregue aqui. Cruzamos valor e número da fatura.",
+    "upload": "Carregar e verificar",
+    "howExport": "Como exportar o extrato?",
+    "howExportText": "No homebanking abra Contas → Movimentos, escolha o período e exporte em CSV (Caixa, Millennium, Santander, Novo Banco, BPI, ActivoBank, Revolut…).\nSe o banco só der Excel, abra-o e use Guardar como → CSV.\nPode carregar o mesmo período várias vezes: os movimentos repetidos são ignorados.",
+    "uploaded": "{found} recebimentos lidos, {added} novos. {matched} faturas pagas, {suggested} por confirmar.",
+    "autoTitle": "Ligação automática ao banco",
+    "autoText": "Leitura só de movimentos, pela Enable Banking (open banking, regulado). Verificamos a cada 6 horas.",
+    "connected": "Banco ligado.",
+    "connectFailed": "Não foi possível ligar o banco.",
+    "statusOk": "ligado",
+    "statusError": "erro",
+    "lastSync": "Última verificação",
+    "expires": "Autorização válida até {date}. Depois renova-se na app do banco.",
+    "consentExpired": "A autorização do banco expirou. Desligue e volte a ligar.",
+    "syncNow": "Verificar agora",
+    "disconnect": "Desligar",
+    "notSetUp": "A ligação automática ainda não está configurada nesta instalação. Entretanto use o extrato.",
+    "chooseBank": "Escolha o banco",
+    "psuBusiness": "Conta de empresa",
+    "psuPersonal": "Conta particular",
+    "connect": "Ligar banco",
+    "connectHint": "Vai entrar no site ou app do seu banco para autorizar a leitura. Nunca vemos a sua palavra-passe.",
+    "incoming": "Recebimentos (90 dias)",
+    "noTx": "Ainda sem movimentos. Carregue um extrato ou ligue o banco.",
+    "col": {
+      "date": "Data",
+      "amount": "Valor",
+      "from": "De / descrição",
+      "match": "Fatura"
+    },
+    "match": {
+      "matched": "paga automaticamente",
+      "confirmed": "confirmada",
+      "suggested": "por confirmar",
+      "unmatched": "sem fatura",
+      "ignored": "ignorado"
     }
   }
 }

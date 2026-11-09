@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
-import { deleteOrganization, disconnectMoloni, syncNow, updateSettings } from "@/app/actions";
+import { deleteOrganization, disconnectMoloni, syncNow, updatePaymentDetails, updateSettings } from "@/app/actions";
+import { formatIban } from "@/lib/bank";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { Badge, buttonClass, Card, Field, inputClass, PageTitle } from "@/components/ui";
 import { moloniConfigured } from "@/lib/providers/moloni";
@@ -55,6 +56,20 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
       </Card>
 
       <Card>
+        <h2 id="payments" className="font-semibold">{t("paymentsTitle")}</h2>
+        <p className="mt-1 text-sm text-zinc-600">{t("paymentsText")}</p>
+        <ActionForm action={updatePaymentDetails} className="mt-4 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="IBAN"><input name="iban" defaultValue={org.iban ? formatIban(org.iban) : ""} placeholder="PT50 …" className={inputClass} /></Field>
+            <Field label={t("holder")}><input name="account_holder" defaultValue={org.account_holder ?? ""} className={inputClass} /></Field>
+            <Field label={t("mbway")} hint={t("mbwayHint")}><input name="mbway_phone" type="tel" defaultValue={org.mbway_phone ? `+${org.mbway_phone}` : ""} className={inputClass} /></Field>
+          </div>
+          <SubmitButton>{t("save")}</SubmitButton>
+        </ActionForm>
+        <p className="mt-3 text-xs text-zinc-500">{t("paymentsBankHint")} <a href="/app/bank" className="text-emerald-700 hover:underline">{t("bankPage")}</a></p>
+      </Card>
+
+      <Card>
         <h2 id="integrations" className="font-semibold">{t("integrations")}</h2>
         {sp.moloni === "error" && <p className="mt-2 text-sm text-red-600">{t("moloniFailed")} {typeof sp.reason === "string" && sp.reason}</p>}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 p-4">
@@ -91,7 +106,7 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
         <ul className="mt-3 space-y-2 text-sm">
           <li>WhatsApp: {wa ? <Badge tone="green">{wa === "twilio" ? "Twilio" : "Meta"}</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
           <li>Email: {resendConfigured() ? <Badge tone="green">Resend</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
-          <li>{t("payments")}: {stripeConfigured() ? <Badge tone="green">Stripe · MB WAY / Multibanco</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
+          <li>{t("payments")}: {stripeConfigured() ? <Badge tone="green">Stripe · MB WAY / Multibanco</Badge> : org.iban ? <Badge tone="green">{t("transferOnly")}</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
         </ul>
         <p className="mt-3 text-xs text-zinc-500">{t("channelsHint")}</p>
       </Card>

@@ -15,6 +15,9 @@ export type Organization = {
   late_interest_rate: number;
   channel_whatsapp: boolean;
   channel_email: boolean;
+  iban: string | null;
+  account_holder: string | null;
+  mbway_phone: string | null;
 };
 
 export type Customer = {
@@ -43,6 +46,7 @@ export type Invoice = {
   status: InvoiceStatus;
   paid_at: string | null;
   pay_token: string;
+  payer_claimed_at: string | null;
   created_at: string;
 };
 

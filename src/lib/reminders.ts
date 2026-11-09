@@ -73,6 +73,10 @@ export type ComposeInput = {
   senderName: string;
   mentionInterest: boolean;
   interestRate: number;
+  /** false when there is no online payment (no Stripe): the link page shows IBAN / MB WAY instead. */
+  online?: boolean;
+  /** Bank transfer details, written into the text so the customer can pay without opening the link. */
+  transfer?: { iban: string; mbwayPhone?: string | null } | null;
 };
 
 /** The reminder text, plus the values Twilio/Meta templates need, in a fixed order. */
@@ -121,7 +125,20 @@ export function composeMessage(i: ComposeInput) {
         : `Payment for invoice ${n} (${amount}) received. Thank you!`;
       break;
   }
-  const payLine = i.step === "thanks" ? "" : `\n\n${pt ? "Pagar com MB WAY ou Multibanco" : "Pay with MB WAY or Multibanco"}: ${i.payUrl}`;
+  let payLine = "";
+  if (i.step !== "thanks") {
+    if (i.online !== false) payLine = `\n\n${pt ? "Pagar com MB WAY ou Multibanco" : "Pay with MB WAY or Multibanco"}: ${i.payUrl}`;
+    if (i.transfer) {
+      const iban = i.transfer.iban.replace(/(.{4})/g, "$1 ").trim();
+      const mbway = i.transfer.mbwayPhone ? (pt ? ` ou MB WAY para ${formatPhone(i.transfer.mbwayPhone)}` : ` or MB WAY to ${formatPhone(i.transfer.mbwayPhone)}`) : "";
+      payLine += pt
+        ? `\n\n${i.online !== false ? "Ou por transferência" : "Pagamento por transferência"} para o IBAN ${iban}${mbway}. Na descrição indique: ${n}`
+        : `\n\n${i.online !== false ? "Or by bank transfer" : "Payment by bank transfer"} to IBAN ${iban}${mbway}. Please write in the description: ${n}`;
+      if (i.online === false) payLine += `\n${pt ? "Detalhes e \"Já paguei\"" : "Details and \"I've paid\""}: ${i.payUrl}`;
+    } else if (i.online === false) {
+      payLine = `\n\n${pt ? "Detalhes do pagamento" : "Payment details"}: ${i.payUrl}`;
+    }
+  }
   const text = `${body}${payLine}\n\n${pt ? "Obrigado!" : "Thank you!"}\n${i.senderName}`;
   const subject = i.step === "thanks"
     ? (pt ? `Pagamento recebido · fatura ${n}` : `Payment received · invoice ${n}`)
@@ -129,6 +146,12 @@ export function composeMessage(i: ComposeInput) {
   // {1}..{6}: name, invoice, amount, due date, pay link, sender
   const params = [i.contactName, n, amount, due, i.payUrl, i.senderName];
   return { text, subject, params };
+}
+
+/** 351912345678 → "912 345 678" for Portuguese numbers, "+44 …" otherwise. */
+export function formatPhone(e164: string) {
+  if (/^351\d{9}$/.test(e164)) return e164.slice(3).replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
+  return `+${e164}`;
 }
 
 /** Portuguese mobile/landline to E.164 digits (no '+'); returns null if it doesn't look valid. */

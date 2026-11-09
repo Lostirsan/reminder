@@ -17,6 +17,7 @@ export async function Header() {
           <nav className="flex gap-4 text-sm text-zinc-600">
             <Link href="/app" className="hover:text-zinc-900">{t("invoices")}</Link>
             <Link href="/app/invoices/new" className="hover:text-zinc-900">{t("add")}</Link>
+            <Link href="/app/bank" className="hover:text-zinc-900">{t("bank")}</Link>
             <Link href="/app/settings" className="hover:text-zinc-900">{t("settings")}</Link>
           </nav>
         )}
