@@ -5,6 +5,7 @@ import type { Channel, Customer, Invoice, Organization, Step } from "./types";
 import * as twilio from "./providers/twilio";
 import * as meta from "./providers/meta";
 import * as resend from "./providers/resend";
+import { stripeConfigured } from "./providers/stripe";
 
 export function appUrl() {
   return (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -55,6 +56,8 @@ export function composeFor(b: Bundle, step?: Step) {
       senderName: b.org.sender_name,
       mentionInterest: b.org.mention_interest,
       interestRate: Number(b.org.late_interest_rate),
+      online: stripeConfigured(),
+      transfer: b.org.iban ? { iban: b.org.iban, mbwayPhone: b.org.mbway_phone } : null,
     }),
   };
 }

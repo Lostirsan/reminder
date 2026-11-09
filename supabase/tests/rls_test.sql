@@ -91,6 +91,32 @@ insert into messages (organization_id, invoice_id, channel, step, trigger, body)
   on conflict do nothing;
 select pg_temp.expect((select count(*) from messages) = 1, 'auto reminder claimed once');
 
+-- Bank transactions: written by the server, readable only by members; dedupe per source.
+insert into bank_transactions (organization_id, source, external_id, booking_date, amount, description)
+  values (:'org_a', 'upload', 'csv:1', current_date, 100, 'FT 1');
+insert into bank_transactions (organization_id, source, external_id, booking_date, amount, description)
+  values (:'org_a', 'upload', 'csv:1', current_date, 100, 'FT 1') on conflict do nothing;
+select pg_temp.expect((select count(*) from bank_transactions) = 1, 'bank transaction stored once');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.expect((select count(*) from bank_transactions) = 0, 'Bruno can''t see Ana''s bank transactions');
+do $$ begin
+  update bank_transactions set match_status = 'ignored';
+  if found then raise exception 'FAILED: bank transaction update allowed'; end if;
+exception when insufficient_privilege then null;
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect((select count(*) from bank_transactions) = 1, 'Ana sees her bank transactions');
+do $$ begin
+  insert into bank_transactions (organization_id, source, external_id, booking_date, amount) select id, 'upload', 'x', current_date, 1 from organizations;
+  raise exception 'FAILED: direct bank insert allowed';
+exception when insufficient_privilege then null;
+  when others then if sqlerrm like 'FAILED%' then raise; end if;
+end $$;
+reset role;
+-- Enable Banking is an allowed integration provider.
+insert into integrations (organization_id, provider, account_label) values (:'org_a', 'enablebanking', 'Test');
+
 -- Owner can erase the company (GDPR); everything goes with it.
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select public.delete_organization(:'org_a');

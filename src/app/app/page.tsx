@@ -35,12 +35,19 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
     : all;
 
   const { data: integration } = await supabase.from("integrations").select("provider").limit(1).maybeSingle();
+  const { count: toConfirmTx } = await supabase.from("bank_transactions").select("id", { count: "exact", head: true }).eq("match_status", "suggested");
+  const toConfirm = (toConfirmTx ?? 0) + open.filter((i) => i.payer_claimed_at).length;
 
   return (
     <div>
       <PageTitle sub={org.name} actions={<Link href="/app/invoices/new" className={buttonClass.primary}>{t("add")}</Link>}>
         {t("title")}
       </PageTitle>
+      {toConfirm > 0 && (
+        <Link href="/app/bank" className="mb-4 block rounded-lg bg-amber-50 p-4 text-sm text-amber-900 hover:bg-amber-100">
+          {t("toConfirm", { count: toConfirm })} →
+        </Link>
+      )}
       <div className="grid gap-3 sm:grid-cols-4">
         <Stat label={t("overdueAmount")} value={eur(sum(overdue), locale)} tone="red" />
         <Stat label={t("overdueCount")} value={overdue.length} />

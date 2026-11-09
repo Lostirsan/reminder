@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { autoStepFor, daysLate, inSendWindow, STEP_ORDER, todayIn } from "./reminders";
 import { sendReminder, SendError } from "./send";
 import { syncMoloni } from "./sync";
+import { syncBank } from "./banksync";
 import type { Customer, Invoice, Organization, Step } from "./types";
 
 const MIN_GAP_MS = 3 * 864e5; // at least 3 days between two different reminder steps
@@ -18,6 +19,7 @@ export function planReminders(org: Organization, invoices: (Invoice & { customer
   const plan: { invoice: Invoice & { customer: Customer }; step: Step; channels: ("whatsapp" | "email")[] }[] = [];
   for (const inv of invoices) {
     if (inv.status !== "open") continue;
+    if (inv.payer_claimed_at) continue; // customer pressed "Já paguei": wait for the owner or the bank
     const step = autoStepFor(daysLate(inv.due_date, today));
     if (!step) continue;
     const history = byInvoice.get(inv.id) ?? [];
@@ -33,13 +35,17 @@ export function planReminders(org: Organization, invoices: (Invoice & { customer
 }
 
 export async function runTick(db: SupabaseClient, now = new Date()) {
-  const report = { synced: 0, syncErrors: 0, sent: 0, failed: 0, skippedOrgs: 0 };
+  const report = { synced: 0, syncErrors: 0, bankSynced: 0, bankErrors: 0, sent: 0, failed: 0, skippedOrgs: 0 };
 
   // 1. Pull fresh invoices from connected invoicing software.
   const { data: integrations } = await db.from("integrations").select("organization_id, provider").neq("status", "disconnected");
   for (const i of integrations ?? []) {
-    if (i.provider !== "moloni") continue;
-    try { await syncMoloni(db, i.organization_id); report.synced++; } catch { report.syncErrors++; }
+    if (i.provider === "moloni") {
+      try { await syncMoloni(db, i.organization_id); report.synced++; } catch { report.syncErrors++; }
+    } else if (i.provider === "enablebanking") {
+      // Before reminders, so a payment that arrived this morning stops today's reminder.
+      try { if (await syncBank(db, i.organization_id)) report.bankSynced++; } catch { report.bankErrors++; }
+    }
   }
 
   // 2. Send due reminders for companies with automatic reminders on, in business hours.

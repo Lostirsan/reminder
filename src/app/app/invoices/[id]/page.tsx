@@ -39,6 +39,17 @@ export default async function InvoicePage({ params }: PageProps<"/app/invoices/[
         {t("title", { number: invoice.number })}
       </PageTitle>
 
+      {isOpen && invoice.payer_claimed_at && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-sky-50 p-4 text-sm text-sky-900">
+          <span>{t("claimed", { when: when(invoice.payer_claimed_at) })}</span>
+          <ActionForm action={invoiceAction} className="flex gap-2">
+            <input type="hidden" name="invoice_id" value={invoice.id} />
+            <SubmitButton name="op" value="paid">{t("claimConfirm")}</SubmitButton>
+            <SubmitButton name="op" value="claim_reject" variant="secondary">{t("claimReject")}</SubmitButton>
+          </ActionForm>
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>

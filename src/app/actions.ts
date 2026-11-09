@@ -9,6 +9,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOrg } from "@/lib/auth";
 import { loadBundle, logActivity, markPaid, sendReminder, SendError } from "@/lib/send";
 import { syncMoloni } from "@/lib/sync";
+import { answerSuggestion, reconcile, storeTransactions, syncBank } from "@/lib/banksync";
+import { normalizeIban, parseStatement } from "@/lib/bank";
+import { deleteSession } from "@/lib/providers/enablebanking";
+import { decryptJson } from "@/lib/crypto";
 import { normalizePhone } from "@/lib/reminders";
 import type { ActionState } from "@/lib/types";
 
@@ -104,6 +108,23 @@ export async function updateSettings(_: ActionState, formData: FormData): Promis
   return { ok: (await getTranslations("common"))("saved") };
 }
 
+/** Where customers pay: IBAN (+ holder) for transfers, optional MB WAY phone. */
+export async function updatePaymentDetails(_: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, org } = await requireOrg();
+  const ibanRaw = str(formData, "iban");
+  const iban = normalizeIban(ibanRaw);
+  if (ibanRaw && !iban) return fail("bad_iban");
+  const mbRaw = str(formData, "mbway_phone");
+  const mbway = normalizePhone(mbRaw);
+  if (mbRaw && !mbway) return fail("bad_phone");
+  const { error } = await supabase.from("organizations").update({
+    iban, account_holder: str(formData, "account_holder") || null, mbway_phone: mbway,
+  }).eq("id", org.id);
+  if (error) return fail("generic", error.message);
+  revalidatePath("/app", "layout");
+  return { ok: (await getTranslations("common"))("saved") };
+}
+
 export async function deleteOrganization(_: ActionState, formData: FormData): Promise<ActionState> {
   const { supabase, org } = await requireOrg();
   if (str(formData, "confirm") !== org.name) return fail("confirm_name");
@@ -179,8 +200,11 @@ export async function invoiceAction(_: ActionState, formData: FormData): Promise
     else if (op === "pause" || op === "resume") {
       await admin.from("invoices").update({ status: op === "pause" ? "paused" : "open" }).eq("id", id);
       await logActivity(admin, org.id, id, "status", op === "pause" ? "Reminders paused" : "Reminders resumed");
+    } else if (op === "claim_reject") {
+      await admin.from("invoices").update({ payer_claimed_at: null }).eq("id", id);
+      await logActivity(admin, org.id, id, "claim", "Payment not received yet: reminders continue");
     } else if (op === "reopen") {
-      await admin.from("invoices").update({ status: "open", paid_at: null }).eq("id", id);
+      await admin.from("invoices").update({ status: "open", paid_at: null, payer_claimed_at: null }).eq("id", id);
       await logActivity(admin, org.id, id, "status", "Reopened");
     } else if (op === "delete") {
       await supabase.from("invoices").delete().eq("id", id);
@@ -232,4 +256,58 @@ export async function disconnectMoloni(): Promise<void> {
   await admin.from("integrations").delete().eq("organization_id", org.id).eq("provider", "moloni");
   await logActivity(admin, org.id, null, "integration", "Moloni disconnected");
   revalidatePath("/app/settings");
+}
+
+// ------------------------------------------------------------------ bank
+const MAX_STATEMENT_BYTES = 2_000_000;
+const latin1 = (b: Uint8Array) => Array.from(b, (c) => String.fromCharCode(c)).join("");
+
+/** CSV bank statement upload: stores incoming payments and closes the invoices they pay. */
+export async function uploadStatement(_: ActionState, formData: FormData): Promise<ActionState> {
+  const { org } = await requireOrg();
+  const t = await getTranslations("bank");
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return fail("no_file");
+  if (file.size > MAX_STATEMENT_BYTES) return fail("file_too_big");
+  if (/\.(xlsx?|pdf)$/i.test(file.name)) return fail("not_csv");
+  const buf = new Uint8Array(await file.arrayBuffer());
+  // Portuguese banks often export Windows-1252 (Latin-1); fall back when UTF-8 has broken characters.
+  let text = new TextDecoder("utf-8").decode(buf);
+  if (text.includes("\ufffd")) {
+    try { text = new TextDecoder("windows-1252").decode(buf); } catch { text = latin1(buf); }
+  }
+  const { txs, error } = parseStatement(text);
+  if (error) return fail(error === "no_header" ? "csv_no_header" : "csv_no_rows");
+  const admin = createAdminClient();
+  const added = await storeTransactions(admin, org.id, "upload", txs);
+  const r = await reconcile(admin, org.id);
+  await logActivity(admin, org.id, null, "bank", `Statement ${file.name}: ${txs.length} incoming, ${added} new, ${r.matched} invoices paid, ${r.suggested} to confirm`);
+  revalidatePath("/app", "layout");
+  return { ok: t("uploaded", { found: txs.length, added, matched: r.matched, suggested: r.suggested }) };
+}
+
+export async function answerBankMatch(_: ActionState, formData: FormData): Promise<ActionState> {
+  const { org } = await requireOrg();
+  const ok = await answerSuggestion(createAdminClient(), org.id, str(formData, "tx_id"), str(formData, "op") === "confirm");
+  if (!ok) return fail("not_found");
+  revalidatePath("/app", "layout");
+  return { ok: (await getTranslations("common"))("saved") };
+}
+
+export async function syncBankNow(): Promise<void> {
+  const { org } = await requireOrg();
+  try { await syncBank(createAdminClient(), org.id, { force: true }); } catch { /* error is stored on the integration row */ }
+  revalidatePath("/app", "layout");
+}
+
+export async function disconnectBank(): Promise<void> {
+  const { org } = await requireOrg();
+  const admin = createAdminClient();
+  const { data: secret } = await admin.from("integration_secrets").select("ciphertext").eq("organization_id", org.id).eq("provider", "enablebanking").maybeSingle();
+  if (secret) {
+    try { await deleteSession((await decryptJson<{ sessionId: string }>(secret.ciphertext)).sessionId); } catch { /* already gone */ }
+  }
+  await admin.from("integrations").delete().eq("organization_id", org.id).eq("provider", "enablebanking");
+  await logActivity(admin, org.id, null, "integration", "Bank disconnected");
+  revalidatePath("/app/bank");
 }

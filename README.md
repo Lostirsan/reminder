@@ -19,7 +19,8 @@ plain `fetch` + Web Crypto, so everything runs on Workers.
 | Tick: sync Moloni, then send due reminders (weekdays 9–19 Lisbon, each step once) | `src/lib/scheduler.ts`, `src/lib/sync.ts` |
 | Ladder and texts (pre-due, day 1, day 5, day 11 firm + DL 62/2013 interest), PT/EN | `src/lib/reminders.ts` |
 | Sending + logging (Twilio / Meta WhatsApp, Resend email, wa.me link) | `src/lib/send.ts`, `src/lib/providers/*` |
-| Public pay link `/pay/<token>` → fresh Stripe Checkout each click (never expires) | `src/app/pay/[token]` |
+| Public pay link `/pay/<token>`: IBAN + invoice number, MB WAY phone, "Já paguei"; Stripe Checkout if configured | `src/app/pay/[token]` |
+| Free payment detection: CSV bank statement upload or Enable Banking (open banking), matched by amount + invoice number | `src/lib/bank.ts`, `src/lib/banksync.ts`, `src/app/app/bank` |
 | Webhooks: Stripe (paid), Twilio (delivered/read) — both signature-checked | `src/app/api/webhooks/*` |
 | Moloni OAuth connect, tokens AES-GCM encrypted in a table clients can't read | `src/app/api/integrations/moloni`, `src/lib/crypto.ts` |
 | UI strings | `src/messages/{pt,en}.json` |
@@ -58,7 +59,17 @@ Checks: `npm run typecheck && npm run lint && npm test && npm run test:db`
    `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
    `checkout.session.async_payment_failed`, `checkout.session.expired`; copy the signing secret
    into `STRIPE_WEBHOOK_SECRET`. Enable MB WAY and Multibanco under Payment methods.
-5. **Moloni**: in the developer area set the redirect URL `<APP_URL>/api/integrations/moloni/callback`.
+5. **Bank (free)**: customers pay by transfer to the IBAN set in *Definições → Como os clientes pagam*.
+   The owner uploads a CSV statement on */app/bank*, or connects the bank through Enable Banking:
+   enablebanking.com → Control Panel → *Applications* → new **production** app (the key is generated
+   in the browser and downloaded as `.pem`), redirect URL `<APP_URL>/api/integrations/enablebanking/callback`;
+   secrets `ENABLEBANKING_APP_ID` and `ENABLEBANKING_PRIVATE_KEY`. Without a contract the app is in
+   free *restricted* mode: each pilot's account must first be linked once in the Control Panel
+   (*Link accounts*, the owner confirms in their bank app); then *Ligar banco* in our app works for it.
+   Reads every 6 hours (PSD2 limits unattended reads to ~4/day); consents last up to 180 days.
+   Exact match (invoice number in the transfer description + same amount) closes the invoice and
+   sends the thank-you; amount-only matches and "Já paguei" wait for the owner on the Bank page.
+6. **Moloni**: in the developer area set the redirect URL `<APP_URL>/api/integrations/moloni/callback`.
 
 Free-tier limits: Supabase 500 MB / 50k MAU (pauses after 7 idle days, which the cron prevents; no
 backups → move to Pro, $25/month, with the first paying customer); Workers 100k requests/day;
@@ -67,4 +78,5 @@ Resend 3,000 emails/month.
 ## Not yet
 
 InvoiceXpress and TOConline sync, team invites, Stripe Connect (payouts straight to each company:
-needs a registered business), per-company WhatsApp numbers, CSV import.
+needs a registered business), per-company WhatsApp numbers, CSV import of invoices, Excel (.xlsx)
+statements (save as CSV meanwhile), Enable Banking full production (contract + company KYB).

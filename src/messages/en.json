@@ -11,7 +11,8 @@
     "add": "New invoice",
     "settings": "Settings",
     "signOut": "Sign out",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "bank": "Bank"
   },
   "home": {
     "title": "Invoices paid on time, without awkward phone calls",
@@ -73,7 +74,13 @@
     "forbidden": "Not allowed.",
     "no_optin": "This customer hasn't agreed to WhatsApp messages yet. Tick the consent in the contact or use \"Open in my WhatsApp\".",
     "bad_code": "Invalid or expired code. Request a new one.",
-    "rate_limit": "Too many requests. Wait a minute and try again."
+    "rate_limit": "Too many requests. Wait a minute and try again.",
+    "bad_iban": "Invalid IBAN. Check the digits.",
+    "no_file": "Choose a file.",
+    "file_too_big": "File too large (max 2 MB).",
+    "not_csv": "Export the statement as CSV (in Excel: Save as → CSV).",
+    "csv_no_header": "We couldn't find date and amount columns in this file. Is it a CSV statement?",
+    "csv_no_rows": "The statement has no incoming payments (credits)."
   },
   "common": {
     "saved": "Saved.",
@@ -108,7 +115,8 @@
       "amount": "Amount",
       "due": "Due",
       "status": "Status"
-    }
+    },
+    "toConfirm": "{count, plural, one {1 payment} other {# payments}} to confirm"
   },
   "status": {
     "paid": "Paid",
@@ -172,7 +180,10 @@
     "saveCustomer": "Save contact",
     "sent": "Reminder sent.",
     "sentSimulated": "Reminder logged (demo mode: real sending isn't configured).",
-    "optIn": "Agreed to WhatsApp reminders"
+    "optIn": "Agreed to WhatsApp reminders",
+    "claimed": "The customer says it is paid ({when}). Reminders are on hold until you confirm.",
+    "claimConfirm": "Received, mark as paid",
+    "claimReject": "Not received yet"
   },
   "step": {
     "pre": "friendly reminder",
@@ -216,7 +227,15 @@
     "channelsHint": "In demo mode messages are logged but not sent.",
     "danger": "Delete company",
     "deleteHint": "Deletes the company, customers, invoices and history. This can't be undone. Type the company name to confirm.",
-    "delete": "Delete everything"
+    "delete": "Delete everything",
+    "paymentsTitle": "How customers pay",
+    "paymentsText": "The money goes straight to your account. The IBAN and invoice number appear in reminders and on the pay page.",
+    "holder": "Account holder",
+    "mbway": "MB WAY (optional)",
+    "mbwayHint": "Phone number that receives MB WAY.",
+    "paymentsBankHint": "To close invoices by themselves, upload a statement or connect the bank on",
+    "bankPage": "Bank",
+    "transferOnly": "bank transfer (IBAN)"
   },
   "pay": {
     "title": "Invoice {number}",
@@ -230,7 +249,16 @@
     "unavailable": "Online payment isn't available yet. Please contact the supplier.",
     "thanksTitle": "Thank you!",
     "thanksPaid": "Payment received.",
-    "thanksPending": "If you chose Multibanco, the invoice is marked paid as soon as you pay the reference. Nothing else to do."
+    "thanksPending": "If you chose Multibanco, the invoice is marked paid as soon as you pay the reference. Nothing else to do.",
+    "transfer": "Pay by bank transfer",
+    "orTransfer": "Or by bank transfer",
+    "holder": "Account holder",
+    "amount": "Amount",
+    "reference": "Description",
+    "referenceHint": "Write the invoice number in the transfer description so the payment is recognised.",
+    "claimButton": "I've paid",
+    "claimHint": "We tell the supplier and stop the reminders.",
+    "claimedThanks": "Thank you! We told the supplier. Reminders stop while the payment is confirmed."
   },
   "privacy": {
     "title": "Privacy policy",
@@ -249,7 +277,7 @@
     },
     "where": {
       "h": "Where it is stored",
-      "p": "Database in the European Union (Supabase, Frankfurt). Sub-processors: Supabase, Cloudflare, Stripe (payments), Twilio or Meta (WhatsApp) and Resend (email)."
+      "p": "Database in the European Union (Supabase, Frankfurt). Sub-processors: Supabase, Cloudflare, Stripe (payments), Enable Banking (reading bank transactions, only if you connect your bank), Twilio or Meta (WhatsApp) and Resend (email)."
     },
     "keep": {
       "h": "How long",
@@ -258,6 +286,56 @@
     "rights": {
       "h": "Your rights",
       "p": "Access, rectification, erasure and portability. Contact: yegortatarenko06@gmail.com. You can also complain to the CNPD."
+    }
+  },
+  "bank": {
+    "title": "Bank",
+    "sub": "Payments that reach your account close invoices by themselves.",
+    "noIban": "You haven't added the IBAN customers pay to yet.",
+    "addIban": "Add IBAN",
+    "toConfirm": "To confirm",
+    "isItFor": "Is this the payment for invoice",
+    "yesPaid": "Yes, it's paid",
+    "notThis": "Not this one",
+    "notReceived": "Not received yet",
+    "claimedAt": "The customer pressed \"I've paid\" on {when}",
+    "uploadTitle": "Upload a statement",
+    "uploadText": "Export the transactions from online banking as CSV and upload them here. We match amount and invoice number.",
+    "upload": "Upload and check",
+    "howExport": "How do I export a statement?",
+    "howExportText": "In online banking open Accounts → Transactions, pick the period and export as CSV (Caixa, Millennium, Santander, Novo Banco, BPI, ActivoBank, Revolut…).\nIf your bank only gives Excel, open it and use Save as → CSV.\nYou can upload the same period again: repeated transactions are skipped.",
+    "uploaded": "{found} incoming payments read, {added} new. {matched} invoices paid, {suggested} to confirm.",
+    "autoTitle": "Automatic bank connection",
+    "autoText": "Read-only access to transactions through Enable Banking (regulated open banking). Checked every 6 hours.",
+    "connected": "Bank connected.",
+    "connectFailed": "Couldn't connect the bank.",
+    "statusOk": "connected",
+    "statusError": "error",
+    "lastSync": "Last check",
+    "expires": "Authorisation valid until {date}. Then renew it in your bank app.",
+    "consentExpired": "The bank authorisation expired. Disconnect and connect again.",
+    "syncNow": "Check now",
+    "disconnect": "Disconnect",
+    "notSetUp": "Automatic connection isn't set up on this installation yet. Use a statement meanwhile.",
+    "chooseBank": "Choose your bank",
+    "psuBusiness": "Business account",
+    "psuPersonal": "Personal account",
+    "connect": "Connect bank",
+    "connectHint": "You'll sign in on your bank's site or app to allow read access. We never see your password.",
+    "incoming": "Incoming payments (90 days)",
+    "noTx": "No transactions yet. Upload a statement or connect the bank.",
+    "col": {
+      "date": "Date",
+      "amount": "Amount",
+      "from": "From / description",
+      "match": "Invoice"
+    },
+    "match": {
+      "matched": "paid automatically",
+      "confirmed": "confirmed",
+      "suggested": "to confirm",
+      "unmatched": "no invoice",
+      "ignored": "ignored"
     }
   }
 }
