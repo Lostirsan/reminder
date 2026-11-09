@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Dark mode follows the `dark` class on <html>, set before paint by the script in layout.tsx. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
 }
+
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }

@@ -16,7 +16,7 @@ export default async function Onboarding() {
     <div className="mx-auto max-w-lg">
       <Card>
         <h1 className="text-xl font-bold">{t("title")}</h1>
-        <p className="mt-1 text-sm text-zinc-600">{t("sub")}</p>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t("sub")}</p>
         <ActionForm action={createOrganization} className="mt-5 space-y-4">
           <Field label={t("name")}><input name="name" required maxLength={120} className={inputClass} /></Field>
           <Field label={t("sender")} hint={t("senderHint")}><input name="sender_name" maxLength={120} className={inputClass} /></Field>

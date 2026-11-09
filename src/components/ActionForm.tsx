@@ -19,8 +19,8 @@ export function ActionForm({
   return (
     <form action={formAction} className={className}>
       {children}
-      {state?.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
-      {state?.ok && <p className="mt-2 text-sm text-emerald-600">{state.ok}</p>}
+      {state?.error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{state.error}</p>}
+      {state?.ok && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">{state.ok}</p>}
     </form>
   );
 }
@@ -39,7 +39,7 @@ export function SubmitButton({
   const { pending } = useFormStatus();
   const styles = {
     primary: "bg-emerald-700 text-white hover:bg-emerald-800",
-    secondary: "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50",
+    secondary: "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800",
     danger: "bg-red-600 text-white hover:bg-red-700",
   }[variant];
   return (

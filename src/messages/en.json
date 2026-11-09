@@ -12,7 +12,10 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "signIn": "Sign in",
-    "bank": "Bank"
+    "bank": "Bank",
+    "themeLight": "Light theme",
+    "themeSystem": "Theme: same as device",
+    "themeDark": "Dark theme"
   },
   "home": {
     "title": "Invoices paid on time, without awkward phone calls",

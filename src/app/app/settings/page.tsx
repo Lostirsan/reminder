@@ -12,8 +12,8 @@ import { whatsappProvider } from "@/lib/send";
 function Toggle({ name, label, hint, checked }: { name: string; label: string; hint?: string; checked: boolean }) {
   return (
     <label className="flex items-start gap-3">
-      <input type="checkbox" name={name} defaultChecked={checked} className="mt-1 h-4 w-4 accent-emerald-700" />
-      <span><span className="block text-sm font-medium">{label}</span>{hint && <span className="block text-xs text-zinc-500">{hint}</span>}</span>
+      <input type="checkbox" name={name} defaultChecked={checked} className="mt-1 h-4 w-4 accent-emerald-700 dark:accent-emerald-500" />
+      <span><span className="block text-sm font-medium">{label}</span>{hint && <span className="block text-xs text-zinc-500 dark:text-zinc-400">{hint}</span>}</span>
     </label>
   );
 }
@@ -57,7 +57,7 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
 
       <Card>
         <h2 id="payments" className="font-semibold">{t("paymentsTitle")}</h2>
-        <p className="mt-1 text-sm text-zinc-600">{t("paymentsText")}</p>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t("paymentsText")}</p>
         <ActionForm action={updatePaymentDetails} className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="IBAN"><input name="iban" defaultValue={org.iban ? formatIban(org.iban) : ""} placeholder="PT50 …" className={inputClass} /></Field>
@@ -66,23 +66,23 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
           </div>
           <SubmitButton>{t("save")}</SubmitButton>
         </ActionForm>
-        <p className="mt-3 text-xs text-zinc-500">{t("paymentsBankHint")} <a href="/app/bank" className="text-emerald-700 hover:underline">{t("bankPage")}</a></p>
+        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{t("paymentsBankHint")} <a href="/app/bank" className="text-emerald-700 dark:text-emerald-400 hover:underline">{t("bankPage")}</a></p>
       </Card>
 
       <Card>
         <h2 id="integrations" className="font-semibold">{t("integrations")}</h2>
-        {sp.moloni === "error" && <p className="mt-2 text-sm text-red-600">{t("moloniFailed")} {typeof sp.reason === "string" && sp.reason}</p>}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 p-4">
+        {sp.moloni === "error" && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t("moloniFailed")} {typeof sp.reason === "string" && sp.reason}</p>}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
           <div>
             <div className="font-medium">Moloni</div>
             {moloni ? (
-              <div className="text-xs text-zinc-500">
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
                 <Badge tone={moloni.status === "connected" ? "green" : "red"}>{t(`int.${moloni.status}`)}</Badge>{" "}
                 {moloni.account_label} {moloni.last_sync_at && `· ${t("lastSync")} ${when(moloni.last_sync_at)}`}
-                {moloni.last_error && <span className="block text-red-600">{moloni.last_error}</span>}
+                {moloni.last_error && <span className="block text-red-600 dark:text-red-400">{moloni.last_error}</span>}
               </div>
             ) : (
-              <div className="text-xs text-zinc-500">{moloniConfigured() ? t("moloniHint") : t("moloniNotSetUp")}</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">{moloniConfigured() ? t("moloniHint") : t("moloniNotSetUp")}</div>
             )}
           </div>
           <div className="flex gap-2">
@@ -96,7 +96,7 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
             ) : null}
           </div>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-zinc-200 p-4 text-sm text-zinc-500">
+        <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-zinc-200 dark:border-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400">
           <span>InvoiceXpress · TOConline</span><span>{t("soon")}</span>
         </div>
       </Card>
@@ -108,12 +108,12 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
           <li>Email: {resendConfigured() ? <Badge tone="green">Resend</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
           <li>{t("payments")}: {stripeConfigured() ? <Badge tone="green">Stripe · MB WAY / Multibanco</Badge> : org.iban ? <Badge tone="green">{t("transferOnly")}</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
         </ul>
-        <p className="mt-3 text-xs text-zinc-500">{t("channelsHint")}</p>
+        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{t("channelsHint")}</p>
       </Card>
 
-      <Card className="border-red-200">
-        <h2 className="font-semibold text-red-700">{t("danger")}</h2>
-        <p className="mt-1 text-sm text-zinc-600">{t("deleteHint")}</p>
+      <Card className="border-red-200 dark:border-red-900">
+        <h2 className="font-semibold text-red-700 dark:text-red-400">{t("danger")}</h2>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t("deleteHint")}</p>
         <ActionForm action={deleteOrganization} className="mt-3 flex flex-wrap gap-2">
           <input name="confirm" placeholder={org.name} className={`${inputClass} max-w-xs`} />
           <SubmitButton variant="danger">{t("delete")}</SubmitButton>
