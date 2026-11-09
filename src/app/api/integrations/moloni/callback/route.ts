@@ -21,12 +21,15 @@ export async function GET(request: NextRequest) {
   const db = createAdminClient();
   try {
     const tokens = await exchangeCode(code, `${appUrl()}/api/integrations/moloni/callback`);
-    const company = await moloniClient(tokens, async () => {}).firstCompany();
+    const companies = await moloniClient(tokens, async () => {}).companies();
+    // One company: use it. Several (e.g. own company + "Empresa Demonstração"): the owner picks on the settings page.
+    const only = companies.length === 1 ? companies[0] : null;
     await db.from("integrations").upsert({
-      organization_id: org.id, provider: "moloni", status: "connected", account_label: company.name, last_error: null,
+      organization_id: org.id, provider: "moloni", status: "connected", account_label: only?.name ?? null, last_error: null,
     });
-    await saveMoloniTokens(db, org.id, { ...tokens, companyId: company.id, companyName: company.name });
-    await logActivity(db, org.id, null, "integration", `Moloni connected: ${company.name}`);
+    await saveMoloniTokens(db, org.id, { ...tokens, companies, companyId: only?.id, companyName: only?.name });
+    await logActivity(db, org.id, null, "integration", `Moloni connected${only ? `: ${only.name}` : ""}`);
+    if (!only) return back("moloni=pick");
   } catch (e) {
     return back(`moloni=error&reason=${encodeURIComponent((e as Error).message.slice(0, 120))}`);
   }

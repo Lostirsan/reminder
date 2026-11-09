@@ -238,7 +238,10 @@
     "mbwayHint": "Phone number that receives MB WAY.",
     "paymentsBankHint": "To close invoices by themselves, upload a statement or connect the bank on",
     "bankPage": "Bank",
-    "transferOnly": "bank transfer (IBAN)"
+    "transferOnly": "bank transfer (IBAN)",
+    "moloniPick": "Which Moloni company should we sync?",
+    "moloniPickHint": "Your Moloni login has several companies. To test, pick “Empresa Demonstração”. To switch later, disconnect and connect again.",
+    "moloniPickButton": "Use this company"
   },
   "pay": {
     "title": "Invoice {number}",
