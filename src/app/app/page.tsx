@@ -44,7 +44,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
         {t("title")}
       </PageTitle>
       {toConfirm > 0 && (
-        <Link href="/app/bank" className="mb-4 block rounded-lg bg-amber-50 p-4 text-sm text-amber-900 hover:bg-amber-100">
+        <Link href="/app/bank" className="mb-4 block rounded-lg bg-amber-50 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40">
           {t("toConfirm", { count: toConfirm })} →
         </Link>
       )}
@@ -53,18 +53,18 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
         <Stat label={t("overdueCount")} value={overdue.length} />
         <Stat label={t("paid30")} value={eur(sum(paid30), locale)} tone="green" />
         <Card className="p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">{t("auto")}</div>
-          <div className={`mt-1 text-lg font-bold ${org.auto_reminders ? "text-emerald-700" : "text-zinc-500"}`}>
+          <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{t("auto")}</div>
+          <div className={`mt-1 text-lg font-bold ${org.auto_reminders ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"}`}>
             {org.auto_reminders ? t("autoOn") : t("autoOff")}
           </div>
-          <Link href="/app/settings" className="text-xs text-emerald-700 hover:underline">{t("change")}</Link>
+          <Link href="/app/settings" className="text-xs text-emerald-700 dark:text-emerald-400 hover:underline">{t("change")}</Link>
         </Card>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-2 border-b border-zinc-200">
+      <div className="mt-8 flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-800">
         {TABS.map((x) => (
           <Link key={x} href={`/app?tab=${x}`}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${x === tab ? "border-emerald-700 text-emerald-800" : "border-transparent text-zinc-500 hover:text-zinc-800"}`}>
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${x === tab ? "border-emerald-700 text-emerald-800 dark:text-emerald-300" : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"}`}>
             {t(`tabs.${x}`)}
           </Link>
         ))}
@@ -73,7 +73,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
       <div className="mt-4">
         {all.length === 0 ? (
           <Empty>
-            <p className="font-medium text-zinc-700">{t("emptyTitle")}</p>
+            <p className="font-medium text-zinc-700 dark:text-zinc-300">{t("emptyTitle")}</p>
             <p className="mt-1">{integration ? t("emptySynced") : t("emptyText")}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <Link href="/app/settings#integrations" className={buttonClass.secondary}>{t("connectMoloni")}</Link>
@@ -86,7 +86,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
         ) : (
           <Card className="overflow-x-auto p-0">
             <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="bg-zinc-50 dark:bg-zinc-950 text-left text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 <tr>
                   <th className="px-4 py-2">{t("col.invoice")}</th>
                   <th className="px-4 py-2">{t("col.customer")}</th>
@@ -95,10 +95,10 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
                   <th className="px-4 py-2">{t("col.status")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                 {rows.map((i) => (
-                  <tr key={i.id} className="hover:bg-zinc-50">
-                    <td className="px-4 py-2 font-medium"><Link href={`/app/invoices/${i.id}`} className="text-emerald-800 hover:underline">{i.number}</Link></td>
+                  <tr key={i.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800">
+                    <td className="px-4 py-2 font-medium"><Link href={`/app/invoices/${i.id}`} className="text-emerald-800 dark:text-emerald-300 hover:underline">{i.number}</Link></td>
                     <td className="px-4 py-2">{i.customer?.name}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{eur(Number(i.amount), locale)}</td>
                     <td className="px-4 py-2 tabular-nums">{formatDate(i.due_date, locale)}</td>

@@ -12,7 +12,7 @@ export default async function NewInvoice() {
       <PageTitle sub={t("sub")}>{t("title")}</PageTitle>
       <Card>
         <ActionForm action={addInvoice} className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2 text-sm font-semibold text-zinc-700">{t("customer")}</div>
+          <div className="sm:col-span-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("customer")}</div>
           <Field label={t("customerName")}><input name="customer" required className={inputClass} /></Field>
           <Field label={t("contactName")}><input name="contact_name" className={inputClass} /></Field>
           <Field label={t("phone")} hint={t("phoneHint")}><input name="phone" type="tel" placeholder="912 345 678" className={inputClass} /></Field>
@@ -24,10 +24,10 @@ export default async function NewInvoice() {
             </select>
           </Field>
           <label className="sm:col-span-2 flex items-start gap-3 text-sm">
-            <input type="checkbox" name="whatsapp_opt_in" className="mt-1 h-4 w-4 accent-emerald-700" />
-            <span>{t("optIn")}<span className="block text-xs text-zinc-500">{t("optInHint")}</span></span>
+            <input type="checkbox" name="whatsapp_opt_in" className="mt-1 h-4 w-4 accent-emerald-700 dark:accent-emerald-500" />
+            <span>{t("optIn")}<span className="block text-xs text-zinc-500 dark:text-zinc-400">{t("optInHint")}</span></span>
           </label>
-          <div className="sm:col-span-2 mt-2 text-sm font-semibold text-zinc-700">{t("invoice")}</div>
+          <div className="sm:col-span-2 mt-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("invoice")}</div>
           <Field label={t("number")}><input name="number" required placeholder="FT 2026/123" className={inputClass} /></Field>
           <Field label={t("amount")}><input name="amount" required inputMode="decimal" placeholder="250,00" className={inputClass} /></Field>
           <Field label={t("due")}><input name="due_date" type="date" required className={inputClass} /></Field>

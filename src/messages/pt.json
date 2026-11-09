@@ -12,7 +12,10 @@
     "settings": "Definições",
     "signOut": "Sair",
     "signIn": "Entrar",
-    "bank": "Banco"
+    "bank": "Banco",
+    "themeLight": "Tema claro",
+    "themeSystem": "Tema: igual ao dispositivo",
+    "themeDark": "Tema escuro"
   },
   "home": {
     "title": "Faturas pagas a tempo, sem telefonemas incómodos",
