@@ -18,10 +18,10 @@ plain `fetch` + Web Crypto, so everything runs on Workers.
 | Every 15 min: pg_cron → `POST /api/cron/tick` (secret from Supabase Vault) | `*_cron.sql`, `src/app/api/cron/tick` |
 | Tick: sync Moloni, then send due reminders (weekdays 9–19 Lisbon, each step once) | `src/lib/scheduler.ts`, `src/lib/sync.ts` |
 | Ladder and texts (pre-due, day 1, day 5, day 11 firm + DL 62/2013 interest), PT/EN | `src/lib/reminders.ts` |
-| Sending + logging (Twilio / Meta WhatsApp, Resend email, wa.me link) | `src/lib/send.ts`, `src/lib/providers/*` |
+| Sending + logging (Twilio / Meta WhatsApp, Resend email with HTML version, wa.me link) | `src/lib/send.ts`, `src/lib/email.ts`, `src/lib/providers/*` |
 | Public pay link `/pay/<token>`: IBAN + invoice number, MB WAY phone, "Já paguei"; Stripe Checkout if configured | `src/app/pay/[token]` |
 | Free payment detection: CSV bank statement upload or Enable Banking (open banking), matched by amount + invoice number | `src/lib/bank.ts`, `src/lib/banksync.ts`, `src/app/app/bank` |
-| Webhooks: Stripe (paid), Twilio (delivered/read) — both signature-checked | `src/app/api/webhooks/*` |
+| Webhooks: Stripe (paid), Twilio (delivered/read), Resend (delivered/bounced) — all signature-checked | `src/app/api/webhooks/*` |
 | Moloni OAuth connect, tokens AES-GCM encrypted in a table clients can't read | `src/app/api/integrations/moloni`, `src/lib/crypto.ts` |
 | UI strings | `src/messages/{pt,en}.json` |
 
@@ -69,7 +69,18 @@ Checks: `npm run typecheck && npm run lint && npm test && npm run test:db`
    Reads every 6 hours (PSD2 limits unattended reads to ~4/day); consents last up to 180 days.
    Exact match (invoice number in the transfer description + same amount) closes the invoice and
    sends the thank-you; amount-only matches and "Já paguei" wait for the owner on the Bank page.
-6. **Moloni**: in the developer area set the redirect URL `<APP_URL>/api/integrations/moloni/callback`.
+6. **Email (Resend)**: resend.com → API Keys → *Sending access* key → `RESEND_API_KEY`.
+   *Test first*: keep `EMAIL_FROM` on `onboarding@resend.dev` and set `EMAIL_TEST_RECIPIENT` to your
+   own address; *Definições → Enviar-me um email de teste* checks it end to end.
+   *Real customers*: Resend → Domains → add your domain (a subdomain such as `mail.<domain>` is fine),
+   copy the DKIM/SPF (MX + TXT) records into your DNS provider, wait for *Verified*, then set
+   `EMAIL_FROM=Pago a Tempo <lembretes@mail.<domain>>` and remove `EMAIL_TEST_RECIPIENT`. Also add a
+   DMARC TXT record `_dmarc.<domain>` = `v=DMARC1; p=none;` (Gmail/Yahoo require one).
+   Webhooks → endpoint `<APP_URL>/api/webhooks/resend`, events `email.delivered`, `email.bounced`,
+   `email.complained`, `email.failed` → signing secret into `RESEND_WEBHOOK_SECRET` (bounces then show
+   on the invoice timeline). Emails go out as the company's sender name, `Reply-To` = the company's
+   reply email (Settings), HTML + plain text, at most once per step (idempotency key).
+7. **Moloni**: in the developer area set the redirect URL `<APP_URL>/api/integrations/moloni/callback`.
 
 Free-tier limits: Supabase 500 MB / 50k MAU (pauses after 7 idle days, which the cron prevents; no
 backups → move to Pro, $25/month, with the first paying customer); Workers 100k requests/day;

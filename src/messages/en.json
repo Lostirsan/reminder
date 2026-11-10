@@ -84,7 +84,9 @@
     "file_too_big": "File too large (max 2 MB).",
     "not_csv": "Export the statement as CSV (in Excel: Save as → CSV).",
     "csv_no_header": "We couldn't find date and amount columns in this file. Is it a CSV statement?",
-    "csv_no_rows": "The statement has no incoming payments (credits)."
+    "csv_no_rows": "The statement has no incoming payments (credits).",
+    "email_not_configured": "Email isn't configured on this installation yet (RESEND_API_KEY).",
+    "no_reply_email": "Fill in the reply email first and save."
   },
   "common": {
     "saved": "Saved.",
@@ -207,8 +209,8 @@
     "reminders": "Reminders",
     "auto": "Send reminders automatically",
     "autoHint": "Before the due date and on day 1, 5 and 11 of delay. Weekdays, 9:00–19:00.",
-    "interest": "Mention late interest and the 40 € compensation in the firm notice",
-    "interestHint": "Decree-Law 62/2013, business-to-business only.",
+    "interest": "Mention late interest and the 40 € compensation in the firm notice (optional)",
+    "interestHint": "Off by default: reminders stay polite. Decree-Law 62/2013, business-to-business only.",
     "rate": "Agreed rate (%)",
     "save": "Save",
     "integrations": "Invoicing software",
@@ -245,7 +247,14 @@
     "moloniPickButton": "Use this company",
     "legalRate": "Late interest: legal commercial rate {rate} % (DL 62/2013, {ref}), updated automatically every semester.",
     "customRate": "Use a different rate agreed with customers",
-    "customRateHint": "Only if it is written in the contract or in invoice terms the customer accepted (between companies). It cannot be raised retroactively."
+    "customRateHint": "Only if it is written in the contract or in invoice terms the customer accepted (between companies). It cannot be raised retroactively.",
+    "replyEmail": "Reply email",
+    "replyEmailHint": "Customers' replies to reminders arrive here.",
+    "emailLive": "sending to customers",
+    "emailTest": "test mode: everything goes to {email}",
+    "emailSandbox": "no own domain yet: Resend only delivers to your own address",
+    "testEmail": "Send me a test email",
+    "testSent": "Test email sent to {email}. Check the inbox and the spam folder."
   },
   "pay": {
     "title": "Invoice {number}",

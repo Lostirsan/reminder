@@ -1,12 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
-import { deleteOrganization, disconnectMoloni, selectMoloniCompany, syncNow, updatePaymentDetails, updateSettings } from "@/app/actions";
+import { deleteOrganization, disconnectMoloni, selectMoloniCompany, sendTestEmail, syncNow, updatePaymentDetails, updateSettings } from "@/app/actions";
 import { formatIban } from "@/lib/bank";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { Badge, buttonClass, Card, Field, inputClass, PageTitle } from "@/components/ui";
 import { moloniConfigured } from "@/lib/providers/moloni";
 import { stripeConfigured } from "@/lib/providers/stripe";
-import { resendConfigured } from "@/lib/providers/resend";
+import { resendConfigured, resendSandbox } from "@/lib/providers/resend";
 import { whatsappProvider } from "@/lib/send";
 import { legalRate } from "@/lib/interest";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -42,6 +42,7 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("name")}><input name="name" defaultValue={org.name} required className={inputClass} /></Field>
             <Field label={t("sender")} hint={t("senderHint")}><input name="sender_name" defaultValue={org.sender_name} required className={inputClass} /></Field>
+            <Field label={t("replyEmail")} hint={t("replyEmailHint")}><input name="reply_email" type="email" defaultValue={org.reply_email ?? ""} className={inputClass} /></Field>
             <Field label="NIF"><input name="nif" defaultValue={org.nif ?? ""} inputMode="numeric" className={inputClass} /></Field>
             <Field label={t("language")}>
               <select name="locale" defaultValue={org.locale} className={inputClass}>
@@ -123,10 +124,18 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
         <h2 className="font-semibold">{t("channels")}</h2>
         <ul className="mt-3 space-y-2 text-sm">
           <li>WhatsApp: {wa ? <Badge tone="green">{wa === "twilio" ? "Twilio" : "Meta"}</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
-          <li>Email: {resendConfigured() ? <Badge tone="green">Resend</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
+          <li>Email: {!resendConfigured() ? <Badge tone="zinc">{t("demoMode")}</Badge>
+            : process.env.EMAIL_TEST_RECIPIENT ? <><Badge tone="zinc">Resend</Badge> <span className="text-xs text-zinc-500 dark:text-zinc-400">{t("emailTest", { email: process.env.EMAIL_TEST_RECIPIENT })}</span></>
+            : resendSandbox() ? <><Badge tone="red">Resend</Badge> <span className="text-xs text-red-600 dark:text-red-400">{t("emailSandbox")}</span></>
+            : <Badge tone="green">Resend · {t("emailLive")}</Badge>}</li>
           <li>{t("payments")}: {stripeConfigured() ? <Badge tone="green">Stripe · MB WAY / Multibanco</Badge> : org.iban ? <Badge tone="green">{t("transferOnly")}</Badge> : <Badge tone="zinc">{t("demoMode")}</Badge>}</li>
         </ul>
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">{t("channelsHint")}</p>
+        {resendConfigured() && (
+          <ActionForm action={sendTestEmail} className="mt-3">
+            <SubmitButton variant="secondary">{t("testEmail")}</SubmitButton>
+          </ActionForm>
+        )}
       </Card>
 
       <Card className="border-red-200 dark:border-red-900">

@@ -20,6 +20,8 @@ export type Organization = {
   iban: string | null;
   account_holder: string | null;
   mbway_phone: string | null;
+  /** Replies to reminder emails go here (the supplier's own inbox). */
+  reply_email: string | null;
 };
 
 export type Customer = {
