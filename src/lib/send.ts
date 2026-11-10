@@ -6,6 +6,7 @@ import * as twilio from "./providers/twilio";
 import * as meta from "./providers/meta";
 import * as resend from "./providers/resend";
 import { stripeConfigured } from "./providers/stripe";
+import { interestRateOf } from "./interest";
 
 export function appUrl() {
   return (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -55,7 +56,7 @@ export function composeFor(b: Bundle, step?: Step) {
       payUrl: payUrl(b.invoice),
       senderName: b.org.sender_name,
       mentionInterest: b.org.mention_interest,
-      interestRate: Number(b.org.late_interest_rate),
+      interestRate: interestRateOf(b.org),
       online: stripeConfigured(),
       transfer: b.org.iban ? { iban: b.org.iban, mbwayPhone: b.org.mbway_phone } : null,
     }),

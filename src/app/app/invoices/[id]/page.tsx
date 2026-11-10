@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
 import { eur, formatDate, lateInterest } from "@/lib/reminders";
+import { interestRateOf } from "@/lib/interest";
 import { composeFor, payUrl, whatsappProvider } from "@/lib/send";
 import { resendConfigured } from "@/lib/providers/resend";
 import { invoiceAction } from "@/app/actions";
@@ -26,7 +27,7 @@ export default async function InvoicePage({ params }: PageProps<"/app/invoices/[
     supabase.from("activity").select("*").eq("invoice_id", id).order("created_at", { ascending: false }).limit(50),
   ]);
   const preview = composeFor({ org, invoice, customer });
-  const li = lateInterest(Number(invoice.amount), preview.days, Number(org.late_interest_rate));
+  const li = lateInterest(Number(invoice.amount), preview.days, interestRateOf(org));
   const isOpen = invoice.status === "open" || invoice.status === "paused";
   const wa = whatsappProvider();
   const mail = resendConfigured();

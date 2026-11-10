@@ -14,9 +14,9 @@
     "signIn": "Sign in",
     "bank": "Bank",
     "themeLight": "Light theme",
-    "themeSystem": "Theme: same as device",
     "themeDark": "Dark theme",
-    "customers": "Customers"
+    "customers": "Customers",
+    "theme": "Theme"
   },
   "home": {
     "title": "Invoices paid on time, without awkward phone calls",
@@ -209,8 +209,7 @@
     "autoHint": "Before the due date and on day 1, 5 and 11 of delay. Weekdays, 9:00–19:00.",
     "interest": "Mention late interest and the 40 € compensation in the firm notice",
     "interestHint": "Decree-Law 62/2013, business-to-business only.",
-    "rate": "Commercial late interest rate (%)",
-    "rateHint": "2nd half of 2026: 10.40 %.",
+    "rate": "Agreed rate (%)",
     "save": "Save",
     "integrations": "Invoicing software",
     "moloniFailed": "Couldn't connect Moloni.",
@@ -243,7 +242,10 @@
     "transferOnly": "bank transfer (IBAN)",
     "moloniPick": "Which Moloni company should we sync?",
     "moloniPickHint": "Your Moloni login has several companies. To test, pick “Empresa Demonstração”. To switch later, disconnect and connect again.",
-    "moloniPickButton": "Use this company"
+    "moloniPickButton": "Use this company",
+    "legalRate": "Late interest: legal commercial rate {rate} % (DL 62/2013, {ref}), updated automatically every semester.",
+    "customRate": "Use a different rate agreed with customers",
+    "customRateHint": "Only if it is written in the contract or in invoice terms the customer accepted (between companies). It cannot be raised retroactively."
   },
   "pay": {
     "title": "Invoice {number}",

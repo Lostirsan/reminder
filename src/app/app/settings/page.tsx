@@ -8,6 +8,7 @@ import { moloniConfigured } from "@/lib/providers/moloni";
 import { stripeConfigured } from "@/lib/providers/stripe";
 import { resendConfigured } from "@/lib/providers/resend";
 import { whatsappProvider } from "@/lib/send";
+import { legalRate } from "@/lib/interest";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { loadMoloniTokens } from "@/lib/sync";
 
@@ -28,6 +29,7 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
   const { data: moloni } = await supabase.from("integrations").select("*").eq("provider", "moloni").maybeSingle();
   const moloniTokens = moloni ? await loadMoloniTokens(createAdminClient(), org.id).catch(() => null) : null;
   const moloniChoices = moloniTokens && !moloniTokens.companyId ? moloniTokens.companies ?? [] : [];
+  const legal = legalRate();
   const wa = whatsappProvider();
   const when = (iso: string) => new Date(iso).toLocaleString(locale === "pt" ? "pt-PT" : "en-GB", { timeZone: org.timezone, dateStyle: "short", timeStyle: "short" });
 
@@ -52,8 +54,10 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
           <Toggle name="channel_whatsapp" checked={org.channel_whatsapp} label="WhatsApp" />
           <Toggle name="channel_email" checked={org.channel_email} label="Email" />
           <Toggle name="mention_interest" checked={org.mention_interest} label={t("interest")} hint={t("interestHint")} />
+          <p className="text-sm">{t("legalRate", { rate: legal.rate.toLocaleString(locale === "pt" ? "pt-PT" : "en-GB"), ref: legal.ref })}</p>
+          <Toggle name="late_interest_custom" checked={org.late_interest_custom} label={t("customRate")} hint={t("customRateHint")} />
           <div className="max-w-xs">
-            <Field label={t("rate")} hint={t("rateHint")}><input name="late_interest_rate" defaultValue={String(org.late_interest_rate)} inputMode="decimal" className={inputClass} /></Field>
+            <Field label={t("rate")}><input name="late_interest_rate" defaultValue={org.late_interest_custom ? String(org.late_interest_rate) : ""} placeholder={String(legal.rate)} inputMode="decimal" className={inputClass} /></Field>
           </div>
           <SubmitButton>{t("save")}</SubmitButton>
         </ActionForm>

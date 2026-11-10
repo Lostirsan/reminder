@@ -14,9 +14,9 @@
     "signIn": "Entrar",
     "bank": "Banco",
     "themeLight": "Tema claro",
-    "themeSystem": "Tema: igual ao dispositivo",
     "themeDark": "Tema escuro",
-    "customers": "Clientes"
+    "customers": "Clientes",
+    "theme": "Tema"
   },
   "home": {
     "title": "Faturas pagas a tempo, sem telefonemas incómodos",
@@ -209,8 +209,7 @@
     "autoHint": "Antes do vencimento e no 1.º, 5.º e 11.º dia de atraso. Dias úteis, 9h–19h.",
     "interest": "Mencionar juros de mora e indemnização de 40 € no aviso firme",
     "interestHint": "Decreto-Lei n.º 62/2013, só entre empresas.",
-    "rate": "Taxa de juros comerciais (%)",
-    "rateHint": "2.º semestre de 2026: 10,40 %.",
+    "rate": "Taxa acordada (%)",
     "save": "Guardar",
     "integrations": "Software de faturação",
     "moloniFailed": "Não foi possível ligar o Moloni.",
@@ -243,7 +242,10 @@
     "transferOnly": "transferência (IBAN)",
     "moloniPick": "Que empresa Moloni devemos sincronizar?",
     "moloniPickHint": "O seu login Moloni tem várias empresas. Para testar, escolha a “Empresa Demonstração”. Para mudar depois, desligue e volte a ligar.",
-    "moloniPickButton": "Usar esta empresa"
+    "moloniPickButton": "Usar esta empresa",
+    "legalRate": "Juros de mora: taxa legal comercial {rate} % (DL 62/2013, {ref}), atualizada automaticamente a cada semestre.",
+    "customRate": "Usar outra taxa acordada com os clientes",
+    "customRateHint": "Só se constar do contrato ou das condições da fatura aceites pelo cliente (entre empresas). Não pode ser aumentada retroativamente."
   },
   "pay": {
     "title": "Fatura {number}",

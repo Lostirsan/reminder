@@ -24,7 +24,7 @@ export async function Header() {
           </nav>
         )}
         <div className="ml-auto flex items-center gap-3 text-sm">
-          <ThemeToggle labels={{ light: t("themeLight"), system: t("themeSystem"), dark: t("themeDark") }} />
+          <ThemeToggle labels={{ light: t("themeLight"), dark: t("themeDark"), group: t("theme") }} />
           <form action={setLocale} className="flex overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
             {(["pt", "en"] as const).map((l) => (
               <button key={l} name="locale" value={l}
