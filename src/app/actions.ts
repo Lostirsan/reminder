@@ -245,15 +245,6 @@ export async function loadDemoData() {
 }
 
 // ------------------------------------------------------------------ integrations
-/** Removes the sample customers and invoices added by "Load demo data" (their messages and logs cascade). */
-export async function removeDemoData(): Promise<void> {
-  const { org } = await requireOrg();
-  const admin = createAdminClient();
-  await admin.from("customers").delete().eq("organization_id", org.id).eq("source", "demo");
-  await logActivity(admin, org.id, null, "status", "Demo data removed");
-  revalidatePath("/app", "layout");
-}
-
 export async function syncNow(): Promise<void> {
   const { org } = await requireOrg();
   try { await syncMoloni(createAdminClient(), org.id); } catch { /* error is stored on the integration row */ }
