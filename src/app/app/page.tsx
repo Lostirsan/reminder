@@ -6,7 +6,7 @@ import { buttonClass, Card, Empty, PageTitle, Stat } from "@/components/ui";
 import { StatusBadge } from "@/components/InvoiceBits";
 import type { Customer, Invoice, Locale } from "@/lib/types";
 
-const TABS = ["overdue", "upcoming", "paid", "all"] as const;
+const TABS = ["all", "upcoming", "overdue", "paid"] as const;
 
 export async function generateMetadata() {
   return { title: (await getTranslations("dashboard"))("title") };
@@ -17,7 +17,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
   const t = await getTranslations("dashboard");
   const locale = (await getLocale()) as Locale;
   const sp = await searchParams;
-  const tab = TABS.find((x) => x === sp.tab) ?? "overdue";
+  const tab = TABS.find((x) => x === sp.tab) ?? "all";
   const today = todayIn(org.timezone);
 
   const { data } = await supabase.from("invoices").select("*, customer:customers(name)").order("due_date", { ascending: true }).limit(1000);
