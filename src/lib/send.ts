@@ -7,6 +7,7 @@ import * as meta from "./providers/meta";
 import * as resend from "./providers/resend";
 import { stripeConfigured } from "./providers/stripe";
 import { interestRateOf } from "./interest";
+import { fromHeader, renderEmailHtml } from "./email";
 
 export function appUrl() {
   return (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -117,7 +118,19 @@ export async function sendReminder(
   try {
     if (provider === "twilio") providerId = await twilio.sendWhatsApp(recipient, msg.text, msg.params, `${appUrl()}/api/webhooks/twilio`);
     else if (provider === "meta") providerId = await meta.sendWhatsApp(recipient, msg.text, msg.params);
-    else if (provider === "resend") providerId = await resend.sendEmail(recipient, msg.subject, msg.text);
+    else if (provider === "resend") {
+      providerId = await resend.sendEmail({
+        from: fromHeader(b.org.sender_name),
+        to: recipient,
+        subject: msg.subject,
+        text: msg.text,
+        html: renderEmailHtml({ text: msg.text, payUrl: payUrl(b.invoice), step: msg.step, locale: b.customer.locale, senderName: b.org.sender_name, replyTo: b.org.reply_email }),
+        // Replies reach the supplier directly: we are a tool, the supplier is the sender.
+        replyTo: b.org.reply_email,
+        idempotencyKey: `msg-${row.id}`,
+        tags: { step: msg.step, trigger },
+      });
+    }
     if (provider) status = "sent";
   } catch (e) {
     status = "failed";

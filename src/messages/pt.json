@@ -84,7 +84,9 @@
     "file_too_big": "Ficheiro demasiado grande (máx. 2 MB).",
     "not_csv": "Exporte o extrato em CSV (no Excel: Guardar como → CSV).",
     "csv_no_header": "Não encontrámos as colunas de data e valor neste ficheiro. É um extrato em CSV?",
-    "csv_no_rows": "O extrato não tem recebimentos (créditos)."
+    "csv_no_rows": "O extrato não tem recebimentos (créditos).",
+    "email_not_configured": "O email ainda não está configurado nesta instalação (RESEND_API_KEY).",
+    "no_reply_email": "Preencha primeiro o email de resposta e guarde."
   },
   "common": {
     "saved": "Guardado.",
@@ -207,8 +209,8 @@
     "reminders": "Lembretes",
     "auto": "Enviar lembretes automaticamente",
     "autoHint": "Antes do vencimento e no 1.º, 5.º e 11.º dia de atraso. Dias úteis, 9h–19h.",
-    "interest": "Mencionar juros de mora e indemnização de 40 € no aviso firme",
-    "interestHint": "Decreto-Lei n.º 62/2013, só entre empresas.",
+    "interest": "Mencionar juros de mora e a indemnização de 40 € no aviso firme (opcional)",
+    "interestHint": "Desligado por defeito: os lembretes ficam cordiais. Decreto-Lei n.º 62/2013, só entre empresas.",
     "rate": "Taxa acordada (%)",
     "save": "Guardar",
     "integrations": "Software de faturação",
@@ -245,7 +247,14 @@
     "moloniPickButton": "Usar esta empresa",
     "legalRate": "Juros de mora: taxa legal comercial {rate} % (DL 62/2013, {ref}), atualizada automaticamente a cada semestre.",
     "customRate": "Usar outra taxa acordada com os clientes",
-    "customRateHint": "Só se constar do contrato ou das condições da fatura aceites pelo cliente (entre empresas). Não pode ser aumentada retroativamente."
+    "customRateHint": "Só se constar do contrato ou das condições da fatura aceites pelo cliente (entre empresas). Não pode ser aumentada retroativamente.",
+    "replyEmail": "Email de resposta",
+    "replyEmailHint": "As respostas dos clientes aos lembretes chegam aqui.",
+    "emailLive": "a enviar para clientes",
+    "emailTest": "modo de teste: tudo vai para {email}",
+    "emailSandbox": "ainda sem domínio próprio: o Resend só entrega no seu próprio endereço",
+    "testEmail": "Enviar-me um email de teste",
+    "testSent": "Email de teste enviado para {email}. Veja a caixa de entrada e o spam."
   },
   "pay": {
     "title": "Fatura {number}",

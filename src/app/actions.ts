@@ -13,7 +13,10 @@ import { answerSuggestion, reconcile, storeTransactions, syncBank } from "@/lib/
 import { normalizeIban, parseStatement } from "@/lib/bank";
 import { deleteSession } from "@/lib/providers/enablebanking";
 import { decryptJson } from "@/lib/crypto";
-import { normalizePhone } from "@/lib/reminders";
+import { composeMessage, normalizePhone } from "@/lib/reminders";
+import { fromHeader, renderEmailHtml } from "@/lib/email";
+import { resendConfigured, sendEmail } from "@/lib/providers/resend";
+import { stripeConfigured } from "@/lib/providers/stripe";
 import type { ActionState } from "@/lib/types";
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -92,6 +95,8 @@ export async function updateSettings(_: ActionState, formData: FormData): Promis
   if (nif && !/^\d{9}$/.test(nif)) return fail("bad_nif");
   // Legal rate unless the owner states a different rate agreed in the contract / invoice terms.
   const custom = formData.get("late_interest_custom") === "on";
+  const replyEmail = str(formData, "reply_email").toLowerCase();
+  if (replyEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(replyEmail)) return fail("bad_email");
   const rate = custom ? Number(str(formData, "late_interest_rate").replace(",", ".")) : Number(org.late_interest_rate);
   if (custom && (!str(formData, "late_interest_rate") || !Number.isFinite(rate) || rate < 0 || rate > 50)) return fail("bad_rate");
   const { error } = await supabase.from("organizations").update({
@@ -105,6 +110,7 @@ export async function updateSettings(_: ActionState, formData: FormData): Promis
     channel_email: formData.get("channel_email") === "on",
     late_interest_custom: custom,
     late_interest_rate: rate,
+    reply_email: replyEmail || null,
   }).eq("id", org.id);
   if (error) return fail("generic", error.message);
   revalidatePath("/app", "layout");
@@ -126,6 +132,34 @@ export async function updatePaymentDetails(_: ActionState, formData: FormData): 
   if (error) return fail("generic", error.message);
   revalidatePath("/app", "layout");
   return { ok: (await getTranslations("common"))("saved") };
+}
+
+/**
+ * Sends a sample reminder to the owner's own reply address, to check that email works end to end
+ * (Resend key, own domain, spam folder). Never goes to a customer.
+ */
+export async function sendTestEmail(): Promise<ActionState> {
+  const { org } = await requireOrg();
+  if (!resendConfigured()) return fail("email_not_configured");
+  if (!org.reply_email) return fail("no_reply_email");
+  const msg = composeMessage({
+    locale: org.locale, step: "d1", contactName: org.sender_name, invoiceNumber: "FT 2026/TESTE",
+    amount: 123.45, dueDate: new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10), days: 2,
+    payUrl: `${await origin()}/app/settings`, senderName: org.sender_name, mentionInterest: false,
+    interestRate: 0, online: stripeConfigured(), transfer: org.iban ? { iban: org.iban, mbwayPhone: org.mbway_phone } : null,
+  });
+  try {
+    await sendEmail({
+      from: fromHeader(org.sender_name), to: org.reply_email, replyTo: org.reply_email,
+      subject: `[Teste] ${msg.subject}`, text: msg.text,
+      html: renderEmailHtml({ text: msg.text, payUrl: `${await origin()}/app/settings`, step: "d1", locale: org.locale, senderName: org.sender_name, replyTo: org.reply_email }),
+      tags: { step: "test", trigger: "manual" },
+    });
+  } catch (e) {
+    return fail("send_failed", (e as Error).message);
+  }
+  const t = await getTranslations("settings");
+  return { ok: t("testSent", { email: org.reply_email }) };
 }
 
 export async function deleteOrganization(_: ActionState, formData: FormData): Promise<ActionState> {
