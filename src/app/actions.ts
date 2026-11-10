@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireOrg } from "@/lib/auth";
 import { loadBundle, logActivity, markPaid, sendReminder, SendError } from "@/lib/send";
-import { syncMoloni } from "@/lib/sync";
+import { loadMoloniTokens, saveMoloniTokens, syncMoloni } from "@/lib/sync";
 import { answerSuggestion, reconcile, storeTransactions, syncBank } from "@/lib/banksync";
 import { normalizeIban, parseStatement } from "@/lib/bank";
 import { deleteSession } from "@/lib/providers/enablebanking";
@@ -247,6 +247,21 @@ export async function loadDemoData() {
 export async function syncNow(): Promise<void> {
   const { org } = await requireOrg();
   try { await syncMoloni(createAdminClient(), org.id); } catch { /* error is stored on the integration row */ }
+  revalidatePath("/app", "layout");
+}
+
+/** When a Moloni login has several companies, the owner picks the one to sync. */
+export async function selectMoloniCompany(formData: FormData): Promise<void> {
+  const { org } = await requireOrg();
+  const admin = createAdminClient();
+  const tokens = await loadMoloniTokens(admin, org.id);
+  const company = tokens?.companies?.find((c) => c.id === Number(formData.get("company_id")));
+  if (!tokens || !company) return;
+  await saveMoloniTokens(admin, org.id, { ...tokens, companyId: company.id, companyName: company.name });
+  await admin.from("integrations").update({ account_label: company.name, last_error: null })
+    .eq("organization_id", org.id).eq("provider", "moloni");
+  await logActivity(admin, org.id, null, "integration", `Moloni company: ${company.name}`);
+  try { await syncMoloni(admin, org.id); } catch { /* error is stored on the integration row */ }
   revalidatePath("/app", "layout");
 }
 

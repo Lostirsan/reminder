@@ -11,15 +11,21 @@ export async function saveMoloniTokens(db: SupabaseClient, orgId: string, t: Mol
   });
 }
 
+/** Decrypted Moloni tokens of an organisation, or null when it is not connected. */
+export async function loadMoloniTokens(db: SupabaseClient, orgId: string) {
+  const { data } = await db.from("integration_secrets").select("ciphertext").eq("organization_id", orgId).eq("provider", "moloni").maybeSingle();
+  return data ? decryptJson<MoloniTokens>(data.ciphertext) : null;
+}
+
 /** Pulls invoices from Moloni into the database: new unpaid ones are added, paid ones are closed. */
 export async function syncMoloni(db: SupabaseClient, orgId: string) {
-  const { data: secret } = await db.from("integration_secrets").select("ciphertext").eq("organization_id", orgId).eq("provider", "moloni").maybeSingle();
-  if (!secret) throw new Error("Moloni is not connected");
-  const tokens = await decryptJson<MoloniTokens>(secret.ciphertext);
+  const tokens = await loadMoloniTokens(db, orgId);
+  if (!tokens) throw new Error("Moloni is not connected");
+  const companyId = tokens.companyId;
+  if (!companyId) throw new Error("Choose which Moloni company to sync"); // picker pending: not an error state
   const client = moloniClient(tokens, (t) => saveMoloniTokens(db, orgId, t));
   const counts = { added: 0, updated: 0, paid: 0 };
   try {
-    const companyId = tokens.companyId ?? (await client.firstCompany()).id;
     const docs = (await client.invoices(companyId)).map(mapInvoice).filter((d): d is NonNullable<typeof d> => Boolean(d && d.dueDate));
 
     const [{ data: existing }, { data: customers }] = await Promise.all([

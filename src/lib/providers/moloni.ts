@@ -7,7 +7,12 @@ const BASE = "https://api.moloni.pt/v1";
 
 export const moloniConfigured = () => Boolean(process.env.MOLONI_CLIENT_ID && process.env.MOLONI_CLIENT_SECRET);
 
-export type MoloniTokens = { access: string; refresh: string; exp: number; companyId?: number; companyName?: string };
+export type MoloniCompany = { id: number; name: string; vat?: string };
+/** companyId is unset until the owner picks one when the login has several companies. */
+export type MoloniTokens = {
+  access: string; refresh: string; exp: number;
+  companyId?: number; companyName?: string; companies?: MoloniCompany[];
+};
 
 export function authorizeUrl(redirectUri: string, state: string) {
   const qs = new URLSearchParams({ response_type: "code", client_id: process.env.MOLONI_CLIENT_ID!, redirect_uri: redirectUri, state });
@@ -49,10 +54,11 @@ export function moloniClient(tokens: MoloniTokens, onRefresh: (t: MoloniTokens) 
   }
   return {
     get tokens() { return t; },
-    async firstCompany() {
-      const list = await call<{ company_id: number; name: string }[]>("companies/getAll");
+    /** Every company this Moloni login can access (a login can hold several, e.g. the demo company). */
+    async companies(): Promise<MoloniCompany[]> {
+      const list = await call<{ company_id: number; name: string; vat?: string }[]>("companies/getAll");
       if (!Array.isArray(list) || !list.length) throw new Error("This Moloni login has no companies");
-      return { id: list[0].company_id, name: list[0].name };
+      return list.map((c) => ({ id: Number(c.company_id), name: c.name, vat: c.vat ? String(c.vat) : undefined }));
     },
     /** All finalised invoices (paid and unpaid), newest first, up to `max`. */
     async invoices(companyId: number, max = 500) {

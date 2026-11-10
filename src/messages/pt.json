@@ -238,7 +238,10 @@
     "mbwayHint": "Telemóvel para receber por MB WAY.",
     "paymentsBankHint": "Para a fatura ficar paga sozinha, carregue o extrato ou ligue o banco em",
     "bankPage": "Banco",
-    "transferOnly": "transferência (IBAN)"
+    "transferOnly": "transferência (IBAN)",
+    "moloniPick": "Que empresa Moloni devemos sincronizar?",
+    "moloniPickHint": "O seu login Moloni tem várias empresas. Para testar, escolha a “Empresa Demonstração”. Para mudar depois, desligue e volte a ligar.",
+    "moloniPickButton": "Usar esta empresa"
   },
   "pay": {
     "title": "Fatura {number}",

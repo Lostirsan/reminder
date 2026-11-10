@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
-import { deleteOrganization, disconnectMoloni, syncNow, updatePaymentDetails, updateSettings } from "@/app/actions";
+import { deleteOrganization, disconnectMoloni, selectMoloniCompany, syncNow, updatePaymentDetails, updateSettings } from "@/app/actions";
 import { formatIban } from "@/lib/bank";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { Badge, buttonClass, Card, Field, inputClass, PageTitle } from "@/components/ui";
@@ -8,6 +8,8 @@ import { moloniConfigured } from "@/lib/providers/moloni";
 import { stripeConfigured } from "@/lib/providers/stripe";
 import { resendConfigured } from "@/lib/providers/resend";
 import { whatsappProvider } from "@/lib/send";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { loadMoloniTokens } from "@/lib/sync";
 
 function Toggle({ name, label, hint, checked }: { name: string; label: string; hint?: string; checked: boolean }) {
   return (
@@ -24,6 +26,8 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
   const locale = await getLocale();
   const sp = await searchParams;
   const { data: moloni } = await supabase.from("integrations").select("*").eq("provider", "moloni").maybeSingle();
+  const moloniTokens = moloni ? await loadMoloniTokens(createAdminClient(), org.id).catch(() => null) : null;
+  const moloniChoices = moloniTokens && !moloniTokens.companyId ? moloniTokens.companies ?? [] : [];
   const wa = whatsappProvider();
   const when = (iso: string) => new Date(iso).toLocaleString(locale === "pt" ? "pt-PT" : "en-GB", { timeZone: org.timezone, dateStyle: "short", timeStyle: "short" });
 
@@ -95,6 +99,16 @@ export default async function Settings({ searchParams }: PageProps<"/app/setting
               <a href="/api/integrations/moloni/connect" className={buttonClass.primary}>{t("connect")}</a>
             ) : null}
           </div>
+          {moloniChoices.length > 0 && (
+            <form action={selectMoloniCompany} className="flex w-full flex-wrap items-end gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-3">
+              <Field label={t("moloniPick")} hint={t("moloniPickHint")}>
+                <select name="company_id" className={inputClass} defaultValue={moloniChoices.find((c) => /demonstra/i.test(c.name))?.id ?? moloniChoices[0].id}>
+                  {moloniChoices.map((c) => <option key={c.id} value={c.id}>{c.name}{c.vat ? ` · ${c.vat}` : ""}</option>)}
+                </select>
+              </Field>
+              <button className={buttonClass.primary}>{t("moloniPickButton")}</button>
+            </form>
+          )}
         </div>
         <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-zinc-200 dark:border-zinc-800 p-4 text-sm text-zinc-500 dark:text-zinc-400">
           <span>InvoiceXpress · TOConline</span><span>{t("soon")}</span>
