@@ -15,7 +15,8 @@
     "bank": "Banco",
     "themeLight": "Tema claro",
     "themeSystem": "Tema: igual ao dispositivo",
-    "themeDark": "Tema escuro"
+    "themeDark": "Tema escuro",
+    "customers": "Clientes"
   },
   "home": {
     "title": "Faturas pagas a tempo, sem telefonemas incómodos",
@@ -185,7 +186,9 @@
     "optIn": "Aceitou lembretes por WhatsApp",
     "claimed": "O cliente indicou que já pagou ({when}). Os lembretes estão parados até confirmar.",
     "claimConfirm": "Recebi, marcar como paga",
-    "claimReject": "Ainda não recebi"
+    "claimReject": "Ainda não recebi",
+    "contactsMoloni": "Contactos do Moloni, atualizados automaticamente. Se alterar o telefone ou o email, passam a ser usados os seus em todas as faturas deste cliente, incluindo as novas do Moloni.",
+    "contactsCustom": "Contactos próprios: usados em vez dos do Moloni em todas as faturas deste cliente. Apague o telefone e o email para voltar aos do Moloni."
   },
   "step": {
     "pre": "lembrete amigável",
@@ -342,5 +345,17 @@
       "unmatched": "sem fatura",
       "ignored": "ignorado"
     }
+  },
+  "customers": {
+    "title": "Clientes",
+    "sub": "Para onde vão os lembretes de cada cliente.",
+    "empty": "Ainda não há clientes.",
+    "name": "Cliente",
+    "phone": "Telefone",
+    "contacts": "Contactos",
+    "own": "Próprios",
+    "open": "Faturas em aberto",
+    "noInvoices": "Sem faturas.",
+    "contactsTitle": "Contactos para lembretes"
   }
 }

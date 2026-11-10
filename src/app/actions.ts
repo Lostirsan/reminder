@@ -144,15 +144,22 @@ export async function addInvoice(_: ActionState, formData: FormData): Promise<Ac
   if (!(amount > 0)) return fail("bad_amount");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return fail("bad_date");
   if (phoneRaw && !phone) return fail("bad_phone");
-  const { data: c, error: ce } = await supabase.from("customers").insert({
-    organization_id: org.id,
-    name: str(formData, "customer"),
-    contact_name: str(formData, "contact_name") || null,
-    phone,
-    email: str(formData, "email") || null,
-    locale: str(formData, "customer_locale") === "en" ? "en" : "pt",
-    whatsapp_opt_in: formData.get("whatsapp_opt_in") === "on",
-  }).select("id").single();
+  // Same customer name as before: reuse that customer and its saved contacts; fields typed now replace them.
+  const name = str(formData, "customer");
+  const { data: known } = await supabase.from("customers").select("id, source")
+    .eq("organization_id", org.id).ilike("name", name.replace(/[\\%_]/g, "\\$&")).limit(1).maybeSingle();
+  const typed = Object.fromEntries(Object.entries({
+    contact_name: str(formData, "contact_name"), phone, email: str(formData, "email"),
+  }).filter(([, v]) => v)) as Record<string, string>;
+  const fields = {
+    ...typed,
+    ...(formData.get("whatsapp_opt_in") === "on" ? { whatsapp_opt_in: true } : {}),
+    ...(known?.source === "moloni" && (typed.phone || typed.email) ? { contacts_custom: true } : {}),
+  };
+  const locale = str(formData, "customer_locale") === "en" ? "en" : "pt";
+  const { data: c, error: ce } = known
+    ? await supabase.from("customers").update(fields).eq("id", known.id).select("id").single()
+    : await supabase.from("customers").insert({ organization_id: org.id, name, locale, ...fields }).select("id").single();
   if (ce) return fail("generic", ce.message);
   const { data: inv, error } = await supabase.from("invoices").insert({
     organization_id: org.id, customer_id: c.id, number: str(formData, "number"), amount, due_date: due,
@@ -166,13 +173,24 @@ export async function updateCustomer(_: ActionState, formData: FormData): Promis
   const phoneRaw = str(formData, "phone");
   const phone = normalizePhone(phoneRaw);
   if (phoneRaw && !phone) return fail("bad_phone");
+  const email = str(formData, "email") || null;
+  const id = str(formData, "customer_id");
+  const { data: current } = await supabase.from("customers").select("source, phone, email, contacts_custom").eq("id", id).maybeSingle();
+  if (!current) return fail("not_found");
+  // Moloni customers: changing phone or email makes them the customer's own contacts (the sync stops
+  // overwriting them); clearing both goes back to the Moloni contacts on the next sync.
+  const contacts = current.source !== "moloni" ? {}
+    : !phone && !email ? { contacts_custom: false, contacts_checked_at: null }
+    : phone !== current.phone || email !== current.email ? { contacts_custom: true }
+    : {};
   const { error } = await supabase.from("customers").update({
     contact_name: str(formData, "contact_name") || null,
     phone,
-    email: str(formData, "email") || null,
+    email,
     locale: str(formData, "locale") === "en" ? "en" : "pt",
     whatsapp_opt_in: formData.get("whatsapp_opt_in") === "on",
-  }).eq("id", str(formData, "customer_id"));
+    ...contacts,
+  }).eq("id", id);
   if (error) return fail("generic", error.message);
   revalidatePath("/app", "layout");
   return { ok: (await getTranslations("common"))("saved") };

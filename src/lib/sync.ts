@@ -1,10 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptJson, encryptJson } from "./crypto";
-import { mapInvoice, moloniClient, type MoloniInvoice, type MoloniTokens } from "./providers/moloni";
+import { contactOf, mapInvoice, moloniClient, type MoloniInvoice, type MoloniTokens } from "./providers/moloni";
 
 const DETAIL_BUDGET = 20;
-import { normalizePhone } from "./reminders";
+const CONTACT_BUDGET = 5;
 import { loadBundle, logActivity, markPaid } from "./send";
 
 export async function saveMoloniTokens(db: SupabaseClient, orgId: string, t: MoloniTokens) {
@@ -42,7 +42,7 @@ export async function syncMoloni(db: SupabaseClient, orgId: string) {
 
     const [{ data: existing }, { data: customers }] = await Promise.all([
       db.from("invoices").select("id, external_id, status, amount, due_date").eq("organization_id", orgId).eq("source", "moloni"),
-      db.from("customers").select("id, external_id").eq("organization_id", orgId).eq("source", "moloni"),
+      db.from("customers").select("id, external_id, contacts_custom, contacts_checked_at").eq("organization_id", orgId).eq("source", "moloni"),
     ]);
     const invByExt = new Map((existing ?? []).map((i) => [i.external_id as string, i]));
     const custByExt = new Map((customers ?? []).map((c) => [c.external_id as string, c.id as string]));
@@ -62,8 +62,8 @@ export async function syncMoloni(db: SupabaseClient, orgId: string) {
           const c = await client.customer(companyId, Number(d.customerExternalId)).catch(() => null);
           const { data: row, error } = await db.from("customers").insert({
             organization_id: orgId, source: "moloni", external_id: d.customerExternalId,
-            name: c?.name || d.customerName, contact_name: c?.contact_name || null,
-            phone: normalizePhone(c?.phone), email: c?.email || c?.contact_email || null,
+            name: c?.name || d.customerName, ...(c ? contactOf(c) : {}),
+            contacts_checked_at: c ? new Date().toISOString() : null,
           }).select("id").single();
           if (error) throw error;
           customerId = row.id as string;
@@ -79,6 +79,19 @@ export async function syncMoloni(db: SupabaseClient, orgId: string) {
         const b = await loadBundle(db, orgId, inv.id);
         if (b && (await markPaid(db, b, "Paid in Moloni"))) counts.paid++;
       }
+    }
+    // Customers without own contacts follow Moloni: refresh those with open invoices, least recently
+    // checked first (a few per run because of the Workers subrequest limit).
+    const openCustomers = new Set(docs.filter((d) => d.open > 0.01).map((d) => d.customerExternalId));
+    const due = (customers ?? [])
+      .filter((c) => !c.contacts_custom && openCustomers.has(c.external_id as string))
+      .sort((a, b) => String(a.contacts_checked_at ?? "").localeCompare(String(b.contacts_checked_at ?? "")))
+      .slice(0, CONTACT_BUDGET);
+    for (const c of due) {
+      const m = await client.customer(companyId, Number(c.external_id)).catch(() => null);
+      if (!m) continue;
+      await db.from("customers").update({ ...contactOf(m), contacts_checked_at: new Date().toISOString() })
+        .eq("id", c.id).eq("contacts_custom", false);
     }
     await db.from("integrations").update({ status: "connected", last_sync_at: new Date().toISOString(), last_error: null })
       .eq("organization_id", orgId).eq("provider", "moloni");
