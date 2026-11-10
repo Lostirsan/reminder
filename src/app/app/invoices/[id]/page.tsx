@@ -5,9 +5,10 @@ import { requireOrg } from "@/lib/auth";
 import { eur, formatDate, lateInterest } from "@/lib/reminders";
 import { composeFor, payUrl, whatsappProvider } from "@/lib/send";
 import { resendConfigured } from "@/lib/providers/resend";
-import { invoiceAction, updateCustomer } from "@/app/actions";
+import { invoiceAction } from "@/app/actions";
+import { CustomerForm } from "@/components/CustomerForm";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
-import { Badge, buttonClass, Card, Field, inputClass, PageTitle } from "@/components/ui";
+import { Badge, buttonClass, Card, PageTitle } from "@/components/ui";
 import { StatusBadge } from "@/components/InvoiceBits";
 import type { Activity, Customer, Invoice, Locale, Message } from "@/lib/types";
 
@@ -35,7 +36,7 @@ export default async function InvoicePage({ params }: PageProps<"/app/invoices/[
   return (
     <div>
       <Link href="/app" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200">← {t("back")}</Link>
-      <PageTitle sub={customer.name} actions={<StatusBadge status={invoice.status} days={preview.days} />}>
+      <PageTitle sub={<Link href={`/app/customers/${customer.id}`} className="hover:underline">{customer.name}</Link>} actions={<StatusBadge status={invoice.status} days={preview.days} />}>
         {t("title", { number: invoice.number })}
       </PageTitle>
 
@@ -117,24 +118,8 @@ export default async function InvoicePage({ params }: PageProps<"/app/invoices/[
             </ActionForm>
           </Card>
           <Card>
-            <h2 className="font-semibold">{t("customer")}</h2>
-            <ActionForm action={updateCustomer} className="mt-3 space-y-3">
-              <input type="hidden" name="customer_id" value={customer.id} />
-              <Field label={t("contactName")}><input name="contact_name" defaultValue={customer.contact_name ?? ""} className={inputClass} /></Field>
-              <Field label={t("phone")}><input name="phone" type="tel" defaultValue={customer.phone ? `+${customer.phone}` : ""} className={inputClass} /></Field>
-              <label className="flex items-start gap-2 text-sm">
-                <input type="checkbox" name="whatsapp_opt_in" defaultChecked={customer.whatsapp_opt_in} className="mt-1 h-4 w-4 accent-emerald-700 dark:accent-emerald-500" />
-                <span>{t("optIn")}</span>
-              </label>
-              <Field label="Email"><input name="email" type="email" defaultValue={customer.email ?? ""} className={inputClass} /></Field>
-              <Field label={t("language")}>
-                <select name="locale" defaultValue={customer.locale} className={inputClass}>
-                  <option value="pt">Português</option>
-                  <option value="en">English</option>
-                </select>
-              </Field>
-              <SubmitButton variant="secondary">{t("saveCustomer")}</SubmitButton>
-            </ActionForm>
+            <h2 className="font-semibold"><Link href={`/app/customers/${customer.id}`} className="hover:underline">{customer.name}</Link></h2>
+            <CustomerForm customer={customer} />
           </Card>
         </div>
       </div>

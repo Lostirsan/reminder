@@ -31,6 +31,8 @@ export type Customer = {
   email: string | null;
   locale: Locale;
   whatsapp_opt_in: boolean;
+  /** Owner edited the contacts: the Moloni sync no longer overwrites them. */
+  contacts_custom: boolean;
 };
 
 export type Invoice = {

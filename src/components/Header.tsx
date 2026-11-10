@@ -17,6 +17,7 @@ export async function Header() {
         {user && (
           <nav className="flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
             <Link href="/app" className="hover:text-zinc-900 dark:hover:text-zinc-100">{t("invoices")}</Link>
+            <Link href="/app/customers" className="hover:text-zinc-900 dark:hover:text-zinc-100">{t("customers")}</Link>
             <Link href="/app/invoices/new" className="hover:text-zinc-900 dark:hover:text-zinc-100">{t("add")}</Link>
             <Link href="/app/bank" className="hover:text-zinc-900 dark:hover:text-zinc-100">{t("bank")}</Link>
             <Link href="/app/settings" className="hover:text-zinc-900 dark:hover:text-zinc-100">{t("settings")}</Link>

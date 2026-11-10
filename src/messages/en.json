@@ -15,7 +15,8 @@
     "bank": "Bank",
     "themeLight": "Light theme",
     "themeSystem": "Theme: same as device",
-    "themeDark": "Dark theme"
+    "themeDark": "Dark theme",
+    "customers": "Customers"
   },
   "home": {
     "title": "Invoices paid on time, without awkward phone calls",
@@ -185,7 +186,9 @@
     "optIn": "Agreed to WhatsApp reminders",
     "claimed": "The customer says it is paid ({when}). Reminders are on hold until you confirm.",
     "claimConfirm": "Received, mark as paid",
-    "claimReject": "Not received yet"
+    "claimReject": "Not received yet",
+    "contactsMoloni": "Contacts from Moloni, updated automatically. If you change the phone or email, yours are used instead for all this customer’s invoices, including new ones from Moloni.",
+    "contactsCustom": "Your own contacts: used instead of the ones in Moloni for all this customer’s invoices. Clear phone and email to go back to Moloni."
   },
   "step": {
     "pre": "friendly reminder",
@@ -342,5 +345,17 @@
       "unmatched": "no invoice",
       "ignored": "ignored"
     }
+  },
+  "customers": {
+    "title": "Customers",
+    "sub": "Where reminders for each customer are sent.",
+    "empty": "No customers yet.",
+    "name": "Customer",
+    "phone": "Phone",
+    "contacts": "Contacts",
+    "own": "Own",
+    "open": "Open invoices",
+    "noInvoices": "No invoices.",
+    "contactsTitle": "Contacts for reminders"
   }
 }
