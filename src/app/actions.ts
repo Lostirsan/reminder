@@ -90,8 +90,10 @@ export async function updateSettings(_: ActionState, formData: FormData): Promis
   const { supabase, org } = await requireOrg();
   const nif = str(formData, "nif").replace(/\s/g, "");
   if (nif && !/^\d{9}$/.test(nif)) return fail("bad_nif");
-  const rate = Number(str(formData, "late_interest_rate").replace(",", "."));
-  if (!Number.isFinite(rate) || rate < 0 || rate > 50) return fail("bad_rate");
+  // Legal rate unless the owner states a different rate agreed in the contract / invoice terms.
+  const custom = formData.get("late_interest_custom") === "on";
+  const rate = custom ? Number(str(formData, "late_interest_rate").replace(",", ".")) : Number(org.late_interest_rate);
+  if (custom && (!str(formData, "late_interest_rate") || !Number.isFinite(rate) || rate < 0 || rate > 50)) return fail("bad_rate");
   const { error } = await supabase.from("organizations").update({
     name: str(formData, "name") || org.name,
     sender_name: str(formData, "sender_name") || org.sender_name,
@@ -101,6 +103,7 @@ export async function updateSettings(_: ActionState, formData: FormData): Promis
     mention_interest: formData.get("mention_interest") === "on",
     channel_whatsapp: formData.get("channel_whatsapp") === "on",
     channel_email: formData.get("channel_email") === "on",
+    late_interest_custom: custom,
     late_interest_rate: rate,
   }).eq("id", org.id);
   if (error) return fail("generic", error.message);

@@ -13,6 +13,8 @@ export type Organization = {
   auto_reminders: boolean;
   mention_interest: boolean;
   late_interest_rate: number;
+  /** A contractual rate replaces the legal one. */
+  late_interest_custom: boolean;
   channel_whatsapp: boolean;
   channel_email: boolean;
   iban: string | null;
