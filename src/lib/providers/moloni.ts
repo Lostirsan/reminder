@@ -3,6 +3,8 @@
 // MOLONI_CLIENT_ID / MOLONI_CLIENT_SECRET come from the Moloni developer area, where the
 // redirect URL <APP_URL>/api/integrations/moloni/callback must be registered.
 
+import { normalizePhone } from "../reminders";
+
 const BASE = "https://api.moloni.pt/v1";
 
 export const moloniConfigured = () => Boolean(process.env.MOLONI_CLIENT_ID && process.env.MOLONI_CLIENT_SECRET);
@@ -97,7 +99,21 @@ export type MoloniInvoice = {
   reconciled_value?: number | string;
   status?: number | string;
 };
-export type MoloniCustomer = { customer_id: number; name: string; contact_name?: string; phone?: string; email?: string; contact_email?: string };
+export type MoloniCustomer = {
+  customer_id: number; name: string; contact_name?: string;
+  phone?: string; contact_phone?: string; email?: string; contact_email?: string;
+};
+
+/** Contacts for reminders from a Moloni customer: a mobile number is preferred (WhatsApp), then any phone. */
+export function contactOf(c: MoloniCustomer) {
+  const phones = [c.contact_phone, c.phone].map((p) => normalizePhone(p)).filter((p): p is string => Boolean(p));
+  const email = [c.email, c.contact_email].map((e) => e?.trim()).find((e) => e && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
+  return {
+    contact_name: c.contact_name?.trim() || null,
+    phone: phones.find((p) => p.startsWith("3519")) ?? phones[0] ?? null,
+    email: email ?? null,
+  };
+}
 
 const num = (v: unknown) => (v === undefined || v === null || v === "" ? 0 : Number(v));
 

@@ -5,15 +5,17 @@ import { ActionForm, SubmitButton } from "@/components/ActionForm";
 import { Card, Field, inputClass, PageTitle } from "@/components/ui";
 
 export default async function NewInvoice() {
-  const { org } = await requireOrg();
+  const { supabase, org } = await requireOrg();
   const t = await getTranslations("newInvoice");
+  const { data: customers } = await supabase.from("customers").select("name").order("name").limit(500);
   return (
     <div className="mx-auto max-w-2xl">
       <PageTitle sub={t("sub")}>{t("title")}</PageTitle>
       <Card>
         <ActionForm action={addInvoice} className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("customer")}</div>
-          <Field label={t("customerName")}><input name="customer" required className={inputClass} /></Field>
+          <Field label={t("customerName")}><input name="customer" required list="known-customers" autoComplete="off" className={inputClass} /></Field>
+          <datalist id="known-customers">{[...new Set((customers ?? []).map((c) => c.name as string))].map((n) => <option key={n} value={n} />)}</datalist>
           <Field label={t("contactName")}><input name="contact_name" className={inputClass} /></Field>
           <Field label={t("phone")} hint={t("phoneHint")}><input name="phone" type="tel" placeholder="912 345 678" className={inputClass} /></Field>
           <Field label="Email"><input name="email" type="email" className={inputClass} /></Field>

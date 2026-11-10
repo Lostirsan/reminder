@@ -144,15 +144,18 @@ export async function addInvoice(_: ActionState, formData: FormData): Promise<Ac
   if (!(amount > 0)) return fail("bad_amount");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return fail("bad_date");
   if (phoneRaw && !phone) return fail("bad_phone");
-  const { data: c, error: ce } = await supabase.from("customers").insert({
-    organization_id: org.id,
-    name: str(formData, "customer"),
-    contact_name: str(formData, "contact_name") || null,
-    phone,
-    email: str(formData, "email") || null,
-    locale: str(formData, "customer_locale") === "en" ? "en" : "pt",
-    whatsapp_opt_in: formData.get("whatsapp_opt_in") === "on",
-  }).select("id").single();
+  // Same customer name as before: reuse that customer and its saved contacts; fields typed now replace them.
+  const name = str(formData, "customer");
+  const { data: known } = await supabase.from("customers").select("id")
+    .eq("organization_id", org.id).ilike("name", name.replace(/[\\%_]/g, "\\$&")).limit(1).maybeSingle();
+  const typed = Object.fromEntries(Object.entries({
+    contact_name: str(formData, "contact_name"), phone, email: str(formData, "email"),
+  }).filter(([, v]) => v)) as Record<string, string>;
+  const fields = { ...typed, ...(formData.get("whatsapp_opt_in") === "on" ? { whatsapp_opt_in: true } : {}) };
+  const locale = str(formData, "customer_locale") === "en" ? "en" : "pt";
+  const { data: c, error: ce } = known
+    ? await supabase.from("customers").update(fields).eq("id", known.id).select("id").single()
+    : await supabase.from("customers").insert({ organization_id: org.id, name, locale, ...fields }).select("id").single();
   if (ce) return fail("generic", ce.message);
   const { data: inv, error } = await supabase.from("invoices").insert({
     organization_id: org.id, customer_id: c.id, number: str(formData, "number"), amount, due_date: due,

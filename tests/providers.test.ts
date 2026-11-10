@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createHmac } from "node:crypto";
 import { verifyWebhook } from "@/lib/providers/stripe";
 import { fillVariables, mapStatus, verifySignature } from "@/lib/providers/twilio";
-import { dueDateOf, mapInvoice } from "@/lib/providers/moloni";
+import { contactOf, dueDateOf, mapInvoice } from "@/lib/providers/moloni";
 import { decryptJson, encryptJson } from "@/lib/crypto";
 
 describe("stripe webhook signature", () => {
@@ -44,6 +44,11 @@ describe("moloni mapping", () => {
     expect(mapInvoice({ document_id: 7, customer_id: 3, number: 12, document_set_name: "FT A", net_value: "100.50", reconciled_value: "40", expiration_date: "2026-10-01 00:00:00", status: 1 }))
       .toMatchObject({ externalId: "7", customerExternalId: "3", number: "FT A 12", open: 60.5, dueDate: "2026-10-01" });
     expect(mapInvoice({ document_id: 8, customer_id: 3, number: 1, status: 0 })).toBeNull();
+  });
+  it("contacts prefer a mobile number and a valid email", () => {
+    expect(contactOf({ customer_id: 1, name: "X", phone: "239 123 456", contact_phone: "912 345 678", email: "", contact_email: "rui@tasca.pt" }))
+      .toEqual({ contact_name: null, phone: "351912345678", email: "rui@tasca.pt" });
+    expect(contactOf({ customer_id: 1, name: "X", phone: "239123456", email: "n/a" })).toMatchObject({ phone: "351239123456", email: null });
   });
   it("due date falls back to issue date + payment-term days", () => {
     expect(dueDateOf({ date: "2026-11-09T00:00:00+0000", expiration_date: null, maturity_date_days: 30 })).toBe("2026-12-09");
