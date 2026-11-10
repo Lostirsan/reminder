@@ -214,7 +214,8 @@ export async function invoiceAction(_: ActionState, formData: FormData): Promise
     if (e instanceof SendError) return fail(e.message);
     throw e;
   }
-  revalidatePath(`/app/invoices/${id}`);
+  // Layout-wide so the dashboard totals (overdue, paid in 30 days) are fresh when you go back.
+  revalidatePath("/app", "layout");
   return { ok: (await getTranslations("common"))("saved") };
 }
 

@@ -1,7 +1,9 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptJson, encryptJson } from "./crypto";
-import { mapInvoice, moloniClient, type MoloniTokens } from "./providers/moloni";
+import { mapInvoice, moloniClient, type MoloniInvoice, type MoloniTokens } from "./providers/moloni";
+
+const DETAIL_BUDGET = 20;
 import { normalizePhone } from "./reminders";
 import { loadBundle, logActivity, markPaid } from "./send";
 
@@ -26,7 +28,17 @@ export async function syncMoloni(db: SupabaseClient, orgId: string) {
   const client = moloniClient(tokens, (t) => saveMoloniTokens(db, orgId, t));
   const counts = { added: 0, updated: 0, paid: 0 };
   try {
-    const docs = (await client.invoices(companyId)).map(mapInvoice).filter((d): d is NonNullable<typeof d> => Boolean(d && d.dueDate));
+    // invoices/getAll has no reconciled_value, so without getOne every invoice would look unpaid forever.
+    // Workers allow few subrequests per run: fetch at most DETAIL_BUDGET details, newest first; the rest
+    // are picked up by the next sync (every 15 minutes).
+    const list = (await client.invoices(companyId)).filter((d) => d.status === undefined || Number(d.status) === 1);
+    const full: MoloniInvoice[] = [];
+    let budget = DETAIL_BUDGET;
+    for (const d of list) {
+      if (d.reconciled_value !== undefined) full.push(d);
+      else if (budget-- > 0) full.push({ ...d, ...(await client.invoice(companyId, d.document_id)) });
+    }
+    const docs = full.map(mapInvoice).filter((d): d is NonNullable<typeof d> => Boolean(d && d.dueDate));
 
     const [{ data: existing }, { data: customers }] = await Promise.all([
       db.from("invoices").select("id, external_id, status, amount, due_date").eq("organization_id", orgId).eq("source", "moloni"),

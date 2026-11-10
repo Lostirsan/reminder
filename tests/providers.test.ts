@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createHmac } from "node:crypto";
 import { verifyWebhook } from "@/lib/providers/stripe";
 import { fillVariables, mapStatus, verifySignature } from "@/lib/providers/twilio";
-import { mapInvoice } from "@/lib/providers/moloni";
+import { dueDateOf, mapInvoice } from "@/lib/providers/moloni";
 import { decryptJson, encryptJson } from "@/lib/crypto";
 
 describe("stripe webhook signature", () => {
@@ -44,6 +44,11 @@ describe("moloni mapping", () => {
     expect(mapInvoice({ document_id: 7, customer_id: 3, number: 12, document_set_name: "FT A", net_value: "100.50", reconciled_value: "40", expiration_date: "2026-10-01 00:00:00", status: 1 }))
       .toMatchObject({ externalId: "7", customerExternalId: "3", number: "FT A 12", open: 60.5, dueDate: "2026-10-01" });
     expect(mapInvoice({ document_id: 8, customer_id: 3, number: 1, status: 0 })).toBeNull();
+  });
+  it("due date falls back to issue date + payment-term days", () => {
+    expect(dueDateOf({ date: "2026-11-09T00:00:00+0000", expiration_date: null, maturity_date_days: 30 })).toBe("2026-12-09");
+    expect(dueDateOf({ date: "2026-11-09", expiration_date: "0000-00-00", maturity_date_days: 0 })).toBe("2026-11-09");
+    expect(dueDateOf({ date: "2026-11-09", expiration_date: "2026-11-20T00:00:00+0000" })).toBe("2026-11-20");
   });
 });
 
