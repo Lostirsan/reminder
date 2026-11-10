@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
 import { daysLate, eur, formatDate, todayIn } from "@/lib/reminders";
-import { loadDemoData } from "../actions";
+import { loadDemoData, removeDemoData } from "../actions";
 import { buttonClass, Card, Empty, PageTitle, Stat } from "@/components/ui";
 import { StatusBadge } from "@/components/InvoiceBits";
 import type { Customer, Invoice, Locale } from "@/lib/types";
@@ -47,6 +47,12 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
         <Link href="/app/bank" className="mb-4 block rounded-lg bg-amber-50 dark:bg-amber-950/40 p-4 text-sm text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40">
           {t("toConfirm", { count: toConfirm })} →
         </Link>
+      )}
+      {all.some((i) => i.source === "demo") && (
+        <form action={removeDemoData} className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 p-3 text-sm text-zinc-600 dark:text-zinc-400">
+          <span>{t("demoShown")}</span>
+          <button className={buttonClass.secondary}>{t("removeDemo")}</button>
+        </form>
       )}
       <div className="grid gap-3 sm:grid-cols-4">
         <Stat label={t("overdueAmount")} value={eur(sum(overdue), locale)} tone="red" />

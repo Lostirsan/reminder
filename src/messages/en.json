@@ -119,7 +119,9 @@
       "due": "Due",
       "status": "Status"
     },
-    "toConfirm": "{count, plural, one {1 payment} other {# payments}} to confirm"
+    "toConfirm": "{count, plural, one {1 payment} other {# payments}} to confirm",
+    "demoShown": "Sample invoices from “Load sample data” are included in these totals.",
+    "removeDemo": "Remove sample data"
   },
   "status": {
     "paid": "Paid",

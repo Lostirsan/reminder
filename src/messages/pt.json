@@ -119,7 +119,9 @@
       "due": "Vencimento",
       "status": "Estado"
     },
-    "toConfirm": "{count, plural, one {1 pagamento} other {# pagamentos}} por confirmar"
+    "toConfirm": "{count, plural, one {1 pagamento} other {# pagamentos}} por confirmar",
+    "demoShown": "As faturas de exemplo (“Carregar exemplo”) estão incluídas nestes totais.",
+    "removeDemo": "Remover exemplo"
   },
   "status": {
     "paid": "Paga",

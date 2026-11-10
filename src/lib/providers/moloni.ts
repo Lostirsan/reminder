@@ -71,6 +71,10 @@ export function moloniClient(tokens: MoloniTokens, onRefresh: (t: MoloniTokens) 
       }
       return out;
     },
+    /** Full invoice: unlike getAll, getOne includes reconciled_value (how much has been paid). */
+    invoice(companyId: number, documentId: number) {
+      return call<MoloniInvoice>("invoices/getOne", { company_id: companyId, document_id: documentId });
+    },
     customer(companyId: number, customerId: number) {
       return call<MoloniCustomer>("customers/getOne", { company_id: companyId, customer_id: customerId });
     },
@@ -85,7 +89,8 @@ export type MoloniInvoice = {
   document_set?: { name?: string };
   entity_name?: string;
   date?: string;
-  expiration_date?: string;
+  expiration_date?: string | null;
+  maturity_date_days?: number | string;
   net_value?: number | string;
   gross_value?: number | string;
   total_value?: number | string;
@@ -95,6 +100,18 @@ export type MoloniInvoice = {
 export type MoloniCustomer = { customer_id: number; name: string; contact_name?: string; phone?: string; email?: string; contact_email?: string };
 
 const num = (v: unknown) => (v === undefined || v === null || v === "" ? 0 : Number(v));
+
+const isoDay = (v?: string | null) => (v && /^\d{4}-\d{2}-\d{2}/.test(v) && !v.startsWith("0000") ? v.slice(0, 10) : null);
+
+/** Due date: expiration_date when set, otherwise issue date + payment-term days (0 = "pronto pagamento"). */
+export function dueDateOf(d: Pick<MoloniInvoice, "date" | "expiration_date" | "maturity_date_days">) {
+  const exp = isoDay(d.expiration_date);
+  if (exp) return exp;
+  const issued = isoDay(d.date);
+  if (!issued) return "";
+  const days = num(d.maturity_date_days);
+  return days > 0 ? new Date(Date.parse(issued) + days * 864e5).toISOString().slice(0, 10) : issued;
+}
 
 /** Normalises a Moloni invoice: open amount, due date, number. Skips drafts. */
 export function mapInvoice(d: MoloniInvoice) {
@@ -107,7 +124,7 @@ export function mapInvoice(d: MoloniInvoice) {
     customerName: d.entity_name || "Cliente",
     number: [d.document_set_name || d.document_set?.name, d.number].filter(Boolean).join(" ") || String(d.document_id),
     open,
-    issueDate: (d.date || "").slice(0, 10) || null,
-    dueDate: (d.expiration_date || d.date || "").slice(0, 10),
+    issueDate: isoDay(d.date),
+    dueDate: dueDateOf(d),
   };
 }
