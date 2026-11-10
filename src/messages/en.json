@@ -108,9 +108,8 @@
     },
     "emptyTitle": "No invoices yet",
     "emptySynced": "Moloni is connected. Open invoices appear after the sync.",
-    "emptyText": "Connect Moloni, add an invoice, or try it with sample data.",
+    "emptyText": "Connect Moloni or add an invoice.",
     "connectMoloni": "Connect Moloni",
-    "demo": "Load sample data",
     "emptyTab": "Nothing here.",
     "col": {
       "invoice": "Invoice",

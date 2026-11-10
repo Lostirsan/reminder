@@ -219,31 +219,6 @@ export async function invoiceAction(_: ActionState, formData: FormData): Promise
   return { ok: (await getTranslations("common"))("saved") };
 }
 
-const day = (n: number) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-
-export async function loadDemoData() {
-  const { supabase, org } = await requireOrg();
-  const testPhone = normalizePhone(process.env.WHATSAPP_TEST_RECIPIENT);
-  const rows: [string, string, number, number, string][] = [
-    ["Tasca do Rui", "Rui", 380.0, -2, "FT 2026/131"],
-    ["Hotel Rio Azul", "Marta", 1240.5, 3, "FT 2026/118"],
-    ["Café Arcada", "António", 96.4, 7, "FT 2026/109"],
-    ["Restaurante Ponte Velha", "Joana", 2115.0, 41, "FT 2026/097"],
-    ["Pastelaria Sé", "Helena", 212.8, 15, "FT 2026/140"],
-  ];
-  for (const [i, [name, contact, amount, late, number]] of rows.entries()) {
-    const { data: c } = await supabase.from("customers").insert({
-      organization_id: org.id, source: "demo", external_id: `demo-${i}`, name, contact_name: contact,
-      phone: testPhone ?? `35191000000${i}`, whatsapp_opt_in: true, email: process.env.EMAIL_TEST_RECIPIENT || `demo${i}@example.com`,
-    }).select("id").single();
-    if (c) await supabase.from("invoices").insert({
-      organization_id: org.id, customer_id: c.id, source: "demo", external_id: `demo-${i}`,
-      number, amount, due_date: day(-late), issue_date: day(-late - 30),
-    });
-  }
-  revalidatePath("/app");
-}
-
 // ------------------------------------------------------------------ integrations
 export async function syncNow(): Promise<void> {
   const { org } = await requireOrg();

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { requireOrg } from "@/lib/auth";
 import { daysLate, eur, formatDate, todayIn } from "@/lib/reminders";
-import { loadDemoData } from "../actions";
 import { buttonClass, Card, Empty, PageTitle, Stat } from "@/components/ui";
 import { StatusBadge } from "@/components/InvoiceBits";
 import type { Customer, Invoice, Locale } from "@/lib/types";
@@ -78,7 +77,6 @@ export default async function Dashboard({ searchParams }: PageProps<"/app">) {
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <Link href="/app/settings#integrations" className={buttonClass.secondary}>{t("connectMoloni")}</Link>
               <Link href="/app/invoices/new" className={buttonClass.secondary}>{t("add")}</Link>
-              <form action={loadDemoData}><button className={buttonClass.secondary}>{t("demo")}</button></form>
             </div>
           </Empty>
         ) : rows.length === 0 ? (
