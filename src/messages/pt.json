@@ -108,9 +108,8 @@
     },
     "emptyTitle": "Ainda não há faturas",
     "emptySynced": "O Moloni está ligado. As faturas em aberto aparecem após a sincronização.",
-    "emptyText": "Ligue o Moloni, adicione uma fatura ou experimente com dados de exemplo.",
+    "emptyText": "Ligue o Moloni ou adicione uma fatura.",
     "connectMoloni": "Ligar Moloni",
-    "demo": "Carregar exemplo",
     "emptyTab": "Nada aqui.",
     "col": {
       "invoice": "Fatura",
